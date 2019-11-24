@@ -19,8 +19,6 @@ resource "google_container_cluster" "cluster" {
   }
   remove_default_node_pool = true
   initial_node_count = 1
-  node_version = var.node_version
-  min_master_version = var.node_version
 
   master_auth {
     username = ""
@@ -38,7 +36,6 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
   location = var.region
   cluster = google_container_cluster.cluster.name
   node_count = var.node_count
-  //version = var.node_version
   node_config {
     // We use preemptible nodes because they're cheap (for testing purposes). Set this to false if you want consistent performance.
     preemptible = var.preemptible_nodes
