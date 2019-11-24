@@ -31,6 +31,7 @@ The setup is tested on Mac OS X. We used Confluent Platform 5.3.1.
 ## Usage
 
 1. Go to `terraform-gcp` directory
+    * Run `helm init` if you are new with helm.
     * Run `helm repo update` to refresh the repo of Helm first.
     * Run `terraform init` (initializes the setup - only needed to be executed once on your laptop, not every time you want to re-create the infrastructure)
     * Run `terraform plan` (plans the setup)
