@@ -28,6 +28,7 @@ helm upgrade \
 
 One pod less for kafka broker:
 ```
+kubectl get events -n operator
 kubectl get pods -n operator
 kubectl get services -n operator | grep LoadBalancer
 kubectl -n operator get all
