@@ -21,9 +21,6 @@ fi
 echo "Deploying K8s dashboard..."
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml
 
-echo "Kubernetes Dashboard token:"
-gcloud config config-helper --format=json | jq -r '.credential.access_token'
-
 echo "Download Confluent Operator"
 # check if Confluent Operator still exist
 DIR="confluent-operator/"

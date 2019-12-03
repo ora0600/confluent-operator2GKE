@@ -43,8 +43,7 @@ The setup is tested on Mac OS X. We used Confluent Platform 5.3.1.
     * Run `terraform init` (initializes the setup - only needed to be executed once on your laptop, not every time you want to re-create the infrastructure)
     * Run `terraform plan` (plans the setup)
     * Run `terraform apply` (sets up all required infrastructure on Cloud - can take 10-20 minutes)
-    * For a Confluent Control Center, KSQL, Schem Registry, and Kafka we can use Google Load Balancers. Please change your /etc/hosts file as mentioned in the documentation [go to confluent](confluentREADME.md)
-2. Monitoring and interactive queries
+2. Implement the use cases and the end of this side
     * Go to [confluent](confluentREADME.md) Readme
     * Use the hints to connect Confluent Control Center or working with KSQL CLI for interactive queries
 
@@ -52,12 +51,13 @@ The setup is tested on Mac OS X. We used Confluent Platform 5.3.1.
 
 When done with the demo, go to `terraform` directory, choose your cloud provicer and run `terraform destroy` to stop and remove the created Kubernetes infrastructure. `Doublecheck the 'disks' and loadbalancers in your cloud console`. If you had some errors, the script might not be able to delete all SDDs and Load Balancers!
 
-## Following use cases will be executed in this github project
+## Following use cases can be executed 
 In general how to use Confluent Operator within a K8s deployment:
-    a) Deploy a 3 node Kafka Broker within 3 Availability Zones
-    b) Deploy Load Balancer to get external access to your confluent cluster
-    c) Scale down and Scale up the Confluent Cluster
-    c) Doing a version Upgrade from 5.3.1 to 5.4.0
+ * Deploy a 3 node Kafka Broker within 3 Availability Zones (Done via terraform deployment)
+ * Check Confluent Cluster, see [Readme](usecases/confluentREADME.md)
+ * Deploy Load Balancer to get external access to your confluent cluster [Readme](usecases/README_LB.md)
+ * Scale down and Scale up the Confluent Cluster [Readme](usecases/README_SCALE.md)
+ * Doing a version Upgrade from 5.3.1 to 5.4.0 [Readme](usecases/README_UPGRADE.md)
 
 
 # Open Source and License Requirements
