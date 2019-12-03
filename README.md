@@ -28,31 +28,17 @@ Make sure to have up-to-date versions (see the tested versions above). For insta
 The setup is tested on Mac OS X. We used Confluent Platform 5.3.1.
 
 ## Goto Google Setup
-
+Set up the cluster in GCP:
 * [Google deployment with terraform](terraform/gcp)
 
 ## Goto AWS Setup
-
+Setup the cluster in AWS
 * [AWS deployment with terraform](terraform/aws)
 
-## Usage
-
-1. Go to `terraform` directory and choose your cloud platform
-    * Run `helm init` to helm if not already done.
-    * Run `helm repo update` to refresh the repo of Helm first.
-    * Run `terraform init` (initializes the setup - only needed to be executed once on your laptop, not every time you want to re-create the infrastructure)
-    * Run `terraform plan` (plans the setup)
-    * Run `terraform apply` (sets up all required infrastructure on Cloud - can take 10-20 minutes)
-2. Implement the use cases and the end of this side
-    * Go to [confluent](confluentREADME.md) Readme
-    * Use the hints to connect Confluent Control Center or working with KSQL CLI for interactive queries
-
-## Deletion of Demo Infrastructure
-
-When done with the demo, go to `terraform` directory, choose your cloud provicer and run `terraform destroy` to stop and remove the created Kubernetes infrastructure. `Doublecheck the 'disks' and loadbalancers in your cloud console`. If you had some errors, the script might not be able to delete all SDDs and Load Balancers!
 
 ## Following use cases can be executed 
-In general how to use Confluent Operator within a K8s deployment:
+
+Find a couple of use cases how to use Confluent Operator within a K8s deployment:
  * Deploy a 3 node Kafka Broker within 3 Availability Zones (Done via terraform deployment)
  * Check Confluent Cluster, see [Readme](usecases/confluentREADME.md)
  * Deploy Load Balancer to get external access to your confluent cluster [Readme](usecases/README_LB.md)
