@@ -1,9 +1,9 @@
 # Check Confluent Cluster
 
-If you did run already `terraform apply` in [terraform/aws](terraform/aws) or [terraform/gcp](terraform/gcp)then you deployed the following objects:
+If you did run already `terraform apply` in [terraform/aws](terraform/aws) or [terraform/gcp](terraform/gcp) then you deployed the following objects:
 * K8s dashboard 
-  a) use for gcp `gcloud config config-helper --format=json | jq -r ‘.credential.access_token’` for login
-  b) use for aws `kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep eks-admin | awk '{print $1}')`
+ 1. use for gcp `gcloud config config-helper --format=json | jq -r ‘.credential.access_token’` for login
+ 2. use for aws `kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep eks-admin | awk '{print $1}')`
 * Confluent Operator
 * Confluent Cluster running in Multi-Zone with with replica of 3 for Zookeeper and Kafka Broker
 
@@ -11,18 +11,18 @@ It will also set your kubectl context to the k8s cluster automatically. (To undo
 
 ## Quick Start
 
-1. Ensure your k8s cluster is running:
-a) GCP
+Ensure your k8s cluster is running:
+  * GCP
 ```bash
 gcloud container clusters list
 ```
-b) AWS
+  * AWS
 ```bash
 eksctl get cluster 
 ```
 
 The following setup was provisioned:
-![k8s cluster deployed pods](images/k8s_cluster.png)
+![k8s cluster deployed pods](../images/k8s_cluster.png)
 
 ## test confluent platform on k8s
 
