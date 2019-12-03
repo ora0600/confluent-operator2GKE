@@ -15,7 +15,7 @@ variable "cluster-name" {
 }
 
 variable "node_count" {
-  default = 4
+  default = 12
 }
 
 variable "aws_region" {

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 set -e
+REGION=${1}
 
-terraform output kubeconfig >> ~/.kube/config
+# update kubeconfig with AWS clsuter information
+aws eks --region ${REGION} update-kubeconfig --name cp-53-cluster
+
 
 echo "Provisioning K8s cluster..."
 eksctl get cluster
-eksctl get nodegroup
-eksctl get iamserviceaccount 
-eksctl get iamidentitymapping
 
 # _idempotent_ setup
 

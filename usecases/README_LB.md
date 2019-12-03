@@ -18,6 +18,8 @@ Please, go first in the right directory for
   * AWS `cd terraform/aws`
   * GCP `cd terraform/gcp`
 
+Please replace `${PROVIDER}` with gcp or aws, depends on which cloud provider you work currently.
+
 ### Create LoadBalancer for KSQL
 ```bash
 cd infrastructure/terraform/gcp/confluent-operator/helm/
@@ -30,18 +32,8 @@ helm upgrade -f ./providers/${PROVIDER}.yaml \
  ./confluent-operator
  kubectl rollout status sts -n operator ksql
 ```
-### Create LoadBalancer for Kafka
-```
-echo "Create LB for Kafka"
-helm upgrade -f ./providers/${PROVIDER}.yaml \
- --set kafka.enabled=true \
- --set kafka.loadBalancer.enabled=true \
- --set kafka.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud kafka \
- ./confluent-operator
- kubectl rollout status sts -n operator kafka
-```
 ### Create LoadBalancer for Schema Registry
-```
+```BASH
 echo "Create LB for Schemaregistry"
 helm upgrade -f ./providers/${PROVIDER}.yaml \
  --set schemaregistry.enabled=true \
@@ -51,18 +43,32 @@ helm upgrade -f ./providers/${PROVIDER}.yaml \
  kubectl rollout status sts -n operator schemaregistry
 ```
 ### Create LoadBalancer for Control Center
-```
+```BASH
 echo "Create LB for Control Center"
 helm upgrade -f ./providers/${PROVIDER}.yaml \
  --set controlcenter.enabled=true \
  --set controlcenter.loadBalancer.enabled=true \
  --set controlcenter.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud controlcenter \
  ./confluent-operator
-kubectl rollout status sts -n operator controlcenter
+ kubectl rollout status sts -n operator controlcenter
 ```
+
+
+
+### Create LoadBalancer for Kafka
+```BASH
+echo "Create LB for Kafka"
+helm upgrade -f ./providers/${PROVIDER}.yaml \
+ --set kafka.enabled=true \
+ --set kafka.loadBalancer.enabled=true \
+ --set kafka.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud kafka \
+ ./confluent-operator
+ kubectl rollout status sts -n operator kafka
+```
+
 ### Check Loadbalancers und setup local hosts
 Loadbalancers are created please wait a couple of minutes...and check
-```
+```BASH
 kubectl get services -n operator | grep LoadBalancer
 ```
 Because we do not want to buy a domain `mydevplatform.provider.cloud`, we have to add the IPs into our `/etc/hosts` file, so that we can reach the components. 
@@ -81,14 +87,20 @@ sudo vi /etc/hosts
 EXTERNALIP-OF-KSQL    ksql.mydevplatform.gcp.cloud ksql-bootstrap-lb ksql
 EXTERNALIP-OF-SR      schemaregistry.mydevplatform.gcp.cloud schemaregistry-bootstrap-lb schemaregistry
 EXTERNALIP-OF-C3      controlcenter.mydevplatform.gcp.cloud controlcenter controlcenter-bootstrap-lb
-EXTERNALIP-OF-KB0     b0.mydevplatform.gcp.cloud kafka-0-lb kafka-0 b0
-EXTERNALIP-OF-KB1     b1.mydevplatform.gcp.cloud kafka-1-lb kafka-1 b1
-EXTERNALIP-OF-KB2     b2.mydevplatform.gcp.cloud kafka-2-lb kafka-2 b2
-EXTERNALIP-OF-KB      kafka.mydevplatform.gcp.cloud kafka-bootstrap-lb kafka
 
 # For example, add the line:
 # 34.77.51.245 controlcenter.mydevplatform.gcp.cloud controlcenter controlcenter-bootstrap-lb
 ```
+
+Now you access the Confluent Control Center externally. Open your Brower and copy the URL: [http://controlcenter:9021/](http://controlcenter:9021/) and enter User=admin and password=Developer1. 
+You can the following in your Control Center
+* open Topic Viewer and check messages of Topic example
+* open KSQL Editor: Create a Stream on topic example: 
+  ```
+  create STREAM EXAMPLE_S (field_0 VARCHAR) WITH (KAFKA_TOPIC='example', VALUE_FORMAT='DELIMITED');
+  # set auto.offset.reset=Earliest
+  select * from EXAMPLE_S;
+  ```
 
 ## 2. Port Forwarding
 
@@ -125,5 +137,4 @@ brew upgrade kubefwd
 # foward all services for -n operator
 sudo kubefwd svc -n operator
 ```
-
 kubefwd is generating for all k8s services an Port forwarding and add in /etc/hosts the correct hostname.

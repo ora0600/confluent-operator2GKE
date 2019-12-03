@@ -82,8 +82,7 @@ resource "null_resource" "setup-messaging" {
   depends_on = [
     null_resource.setup-cluster
   ]
-
   provisioner "local-exec" {
-    command = "../../01_installConfluentPlatform.sh ${var.region} ${var.cprovider}"
+    command = "../01_installConfluentPlatform.sh ${var.region} ${var.cprovider}"
   }
 }

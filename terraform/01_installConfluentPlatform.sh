@@ -12,7 +12,7 @@ if [[ ${PROVIDER} == "gcp" ]]; then
     sleep 3
   done
 else
-  until eksctl get cluster --region ${REGION} | grep 'RUNNING' >/dev/null 2>&1; do
+  until eksctl get cluster --region ${REGION} >/dev/null 2>&1; do
     echo "kubeapi not available yet..."
     sleep 3
   done
@@ -23,6 +23,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-b
 
 echo "Download Confluent Operator"
 # check if Confluent Operator still exist
+cd ${MYDIR}/${PROVIDER}
 DIR="confluent-operator/"
 if [ -d "$DIR" ]; then
   # Take action if $DIR exists. #
@@ -34,7 +35,7 @@ else
   wget https://platform-ops-bin.s3-us-west-1.amazonaws.com/operator/confluent-operator-20190912-v0.65.1.tar.gz
   tar -xvf confluent-operator-20190912-v0.65.1.tar.gz
   rm confluent-operator-20190912-v0.65.1.tar.gz
-  cp ${MYDIR}/terraform/${PROVIDER}/${PROVIDER}.yaml helm/providers/
+  cp ${MYDIR}/${PROVIDER}/${PROVIDER}.yaml helm/providers/
 fi
 
 cd helm/

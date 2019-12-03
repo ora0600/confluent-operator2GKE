@@ -49,7 +49,7 @@ resource "aws_eks_node_group" "cp53" {
 
   scaling_config {
     desired_size = var.node_count
-    max_size     = 6
+    max_size     = 14
     min_size     = 1
   }
 
