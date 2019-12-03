@@ -27,6 +27,9 @@ Make sure to have up-to-date versions (see the tested versions above). For insta
 
 The setup is tested on Mac OS X. We used Confluent Platform 5.3.1.
 
+A typical Confluent Cluster will be deployed:
+![Deployed k8 cluster](images/k8s_cluster.png)
+
 ## Goto Google Setup
 Set up the cluster in GCP:
 * [Google deployment with terraform](terraform/gcp)

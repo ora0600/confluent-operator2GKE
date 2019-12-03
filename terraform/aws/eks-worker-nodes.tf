@@ -45,11 +45,11 @@ resource "aws_eks_node_group" "cp53" {
   subnet_ids      = "${aws_subnet.cp53[*].id}"
   ami_type        = "AL2_x86_64"
   disk_size       = 50
-  instance_types  = ["t2.medium"]
+  instance_types  = ["t2.xlarge"]
 
   scaling_config {
     desired_size = var.node_count
-    max_size     = 14
+    max_size     = 16
     min_size     = 1
   }
 
