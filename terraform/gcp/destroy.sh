@@ -7,7 +7,7 @@ kubectl delete -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-
 helm delete --no-hooks --purge prom &
 helm delete --no-hooks --purge metrics &
 
-../02_deleteConfluentPlatform.sh || true
+../../02_deleteConfluentPlatform.sh || true
 
 
 echo "Purging namespaces..."

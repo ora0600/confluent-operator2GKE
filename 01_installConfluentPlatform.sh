@@ -1,13 +1,22 @@
 #!/usr/bin/env bash
 set -e
+REGION=${1}
+PROVIDER=${2}
 
-# set current directory of script
+# set current directory of this script
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
-until gcloud container clusters list --region europe-west1 | grep 'RUNNING' >/dev/null 2>&1; do
+echo "MYDIR is ${MYDIR}"
+if [[ ${PROVIDER} == "gcp" ]]; then
+  until gcloud container clusters list --region ${REGION} | grep 'RUNNING' >/dev/null 2>&1; do
     echo "kubeapi not available yet..."
     sleep 3
-done
+  done
+else
+  until eksctl get cluster --region ${REGION} | grep 'RUNNING' >/dev/null 2>&1; do
+    echo "kubeapi not available yet..."
+    sleep 3
+  done
+fi
 
 echo "Deploying K8s dashboard..."
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml
@@ -28,7 +37,7 @@ else
   wget https://platform-ops-bin.s3-us-west-1.amazonaws.com/operator/confluent-operator-20190912-v0.65.1.tar.gz
   tar -xvf confluent-operator-20190912-v0.65.1.tar.gz
   rm confluent-operator-20190912-v0.65.1.tar.gz
-  cp ${MYDIR}/gcp.yaml helm/providers/
+  cp ${MYDIR}/terraform/${PROVIDER}/${PROVIDER}.yaml helm/providers/
 fi
 
 cd helm/
@@ -36,7 +45,7 @@ cd helm/
 echo "Install Confluent Operator"
 #helm delete --purge operator
 helm install \
--f ./providers/gcp.yaml \
+-f ./providers/${PROVIDER}.yaml \
 --name operator \
 --namespace operator \
 --set operator.enabled=true \
@@ -52,7 +61,7 @@ kubectl -n operator patch serviceaccount default -p '{"imagePullSecrets": [{"nam
 echo "Install Confluent Zookeeper"
 #helm delete --purge zookeeper
 helm install \
--f ./providers/gcp.yaml \
+-f ./providers/${PROVIDER}.yaml \
 --name zookeeper \
 --namespace operator \
 --set zookeeper.enabled=true \
@@ -65,7 +74,7 @@ kubectl rollout status sts -n operator zookeeper
 echo "Install Confluent Kafka"
 #helm delete --purge kafka
 helm install \
--f ./providers/gcp.yaml \
+-f ./providers/${PROVIDER}.yaml \
 --name kafka \
 --namespace operator \
 --set kafka.enabled=true \
@@ -78,7 +87,7 @@ kubectl rollout status sts -n operator kafka
 echo "Install Confluent Schema Registry"
 #helm delete --purge schemaregistry
 helm install \
--f ./providers/gcp.yaml \
+-f ./providers/${PROVIDER}.yaml \
 --name schemaregistry \
 --namespace operator \
 --set schemaregistry.enabled=true \
@@ -92,7 +101,7 @@ kubectl rollout status sts -n operator schemaregistry
 echo "Install Confluent KSQL"
 # helm delete --purge ksql
 helm install \
--f ./providers/gcp.yaml \
+-f ./providers/${PROVIDER}.yaml \
 --name ksql \
 --namespace operator \
 --set ksql.enabled=true \
@@ -105,7 +114,7 @@ kubectl rollout status sts -n operator ksql
 echo "Install Confluent Control Center"
 # helm delete --purge controlcenter
 helm install \
--f ./providers/gcp.yaml \
+-f ./providers/${PROVIDER}.yaml \
 --name controlcenter \
 --namespace operator \
 --set controlcenter.enabled=true \
@@ -114,61 +123,6 @@ echo "After Control Center Installation: Check all pods..."
 kubectl get pods -n operator
 sleep 10
 kubectl rollout status sts -n operator controlcenter
-
-# TODO Build breaks if we don't wait here until all components are ready. Is there a better solution for a check?
-sleep 200
-
-echo "Create LB for KSQL"
-helm upgrade -f ./providers/gcp.yaml \
- --set ksql.enabled=true \
- --set ksql.loadBalancer.enabled=true \
- --set ksql.loadBalancer.domain=mydevplatform.gcp.cloud ksql \
- ./confluent-operator
- kubectl rollout status sts -n operator ksql
-
-echo "Create LB for Kafka"
-helm upgrade -f ./providers/gcp.yaml \
- --set kafka.enabled=true \
- --set kafka.loadBalancer.enabled=true \
- --set kafka.loadBalancer.domain=mydevplatform.gcp.cloud kafka \
- ./confluent-operator
- kubectl rollout status sts -n operator kafka
-
-echo "Create LB for Schemaregistry"
-helm upgrade -f ./providers/gcp.yaml \
- --set schemaregistry.enabled=true \
- --set schemaregistry.loadBalancer.enabled=true \
- --set schemaregistry.loadBalancer.domain=mydevplatform.gcp.cloud schemaregistry \
- ./confluent-operator
- kubectl rollout status sts -n operator schemaregistry
-
-echo "Create LB for Control Center"
-helm upgrade -f ./providers/gcp.yaml \
- --set controlcenter.enabled=true \
- --set controlcenter.loadBalancer.enabled=true \
- --set controlcenter.loadBalancer.domain=mydevplatform.gcp.cloud controlcenter \
- ./confluent-operator
-kubectl rollout status sts -n operator controlcenter
-
-echo " Loadbalancers are created please wait a couple of minutes..."
-sleep 60
-kubectl get services -n operator | grep LoadBalancer
-echo " After all external IP Adresses are seen, add your local /etc/hosts via "
-echo "sudo /etc/hosts"
-echo "EXTERNAL-IP  ksql.mydevplatform.gcp.cloud ksql-bootstrap-lb ksql"
-echo "EXTERNAL-IP  schemaregistry.mydevplatform.gcp.cloud schemaregistry-bootstrap-lb schemaregistry"
-echo "EXTERNAL-IP  controlcenter.mydevplatform.gcp.cloud controlcenter controlcenter-bootstrap-lb"
-echo "EXTERNAL-IP  b0.mydevplatform.gcp.cloud kafka-0-lb kafka-0 b0"
-echo "EXTERNAL-IP  b1.mydevplatform.gcp.cloud kafka-1-lb kafka-1 b1"
-echo "EXTERNAL-IP  b2.mydevplatform.gcp.cloud kafka-2-lb kafka-2 b2"
-echo "EXTERNAL-IP  kafka.mydevplatform.gcp.cloud kafka-bootstrap-lb kafka"
-kubectl get services -n operator | grep LoadBalancer
-sleep 10
-
-echo "After Load balancer Deployments: Check all Confluent Services..."
-kubectl get services -n operator
-kubectl get pods -n operator
-echo "Confluent Platform into GKE cluster is finished."
 
 echo "Create Topics on Confluent Platform for Test Generator"
 # Create Kafka Property file in all pods

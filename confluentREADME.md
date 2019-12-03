@@ -1,11 +1,13 @@
 # Install Confluent Operator and setup a Confluent Platform Cluster
 
-If you did run already `terraform apply` in [terraform-gcp](terraform-gcp/) then you do not need to install Confluent Platform anymore. Please [Go to Test Confluent Platform on GKE](#test-confluent-platform-on-gke)
+If you did run already `terraform apply` in [terraform/aws](terraform/aws) or [terraform/gcp](terraform/gcp)then you do not need to install Confluent Platform anymore. Please [Go to Test Confluent Platform on K8S](#test-confluent-platform-on-k8s)
 
 If you run your own cluster, please continue:
-Applying this  deployment will create in your existing K8s cluster (see [Create GKE](terraform-gcp/README.md)) the following objects:
+Applying this  deployment will create in your existing K8s cluster (see [Create GKE](terraform/gcp/README.md) or [Create EKS](terraform/aws/README.md)) the following objects:
 
-* K8s dashboard (use `gcloud config config-helper --format=json | jq -r ‘.credential.access_token’` for login)
+* K8s dashboard 
+  a) use for gcp `gcloud config config-helper --format=json | jq -r ‘.credential.access_token’` for login
+  b) use for aws `kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep eks-admin | awk '{print $1}')`
 * Confluent Operator
 * Confluent Cluster running in Multi-Zone with with replica of 3 for Zookeeper and Kafka Broker
 
@@ -13,16 +15,20 @@ It will also set your kubectl context to the gcp cluster automatically. (To undo
 
 ## Quick Start
 
-1. Ensure your GKE cluster is running:
-
+1. Ensure your k8s cluster is running:
+a) GCP
 ```bash
 gcloud container clusters list
+```
+b) AWS
+```bash
+eksctl get cluster 
 ```
 
 2. During the script execution the Confluent Operator (Version v0.65.1) will be downloaded ([The logic is in 01_installConfluentPlatform.sh](01_installConfluentPlatform.sh)). If there is newer Confluent Operator version please update the link in 01_installConfluentPlatform.sh.
 We use Google Cloud Confluent Operator template [gcp.yaml](gcp.yaml) for installing the Confluent Platform into GKE created K8s cluster. The template is copied into the new downloaded Confluent Operator Helm-Chart-Producer directory(see confluent-operator/helm/provider on your local disk). Please change this file [gcp.yaml](gcp.yaml) for your setup. We use Cloud Region=europe-west1 and Zones=europe-west1-b, europe-west1-c, europe-west1-d. The replicas for Kafka Broker and Zookeeper are set to 3 all other replicas=1.
 The following setup will be provisioned:
-![GKE cluster deployed pods](images/gke_cluster.png)
+![k8s cluster deployed pods](images/k8s_cluster.png)
 If the GKE cluster is up and running execute the script [01_installConfluentPlatform.sh](01_installConfluentPlatform.sh) manually.
 
 3. Install Confluent Operator and setup the Confluent Platform in GKE
@@ -35,7 +41,7 @@ Install Confluent Platform in a second step:
 ./01_installConfluentPlatform.sh
 ```
 
-### Test Confluent Cluster
+### test confluent platform on k8s
 
 After the script execution please check again if Confluent Platform cluster is running:
 
@@ -108,36 +114,54 @@ The `terraform apply (with 01_installConfluentPlatform.sh` created a couple of G
 
 The second possibiliy is to create for each Confluent Component an external Loadbalancer in GKE. What we did with the `terraform apply`.
 For this we can use the Confluent Operator and tell k8s to add a loadbalancer
-
+* Create LoadBalancer for KSQL
 ```bash
-cd infrastructure/terraform-gcp/confluent-operator/helm/
-echo "Create LB for Kafka"
-helm upgrade -f ./providers/gcp.yaml \
- --set kafka.enabled=true \
- --set kafka.loadBalancer.enabled=true \
- --set kafka.loadBalancer.domain=mydevplatform.gcp.cloud kafka \
- ./confluent-operator
+cd infrastructure/terraform/gcp/confluent-operator/helm/
+# or cd infrastructure/terraform/aws/confluent-operator/helm/
 echo "Create LB for KSQL"
-helm upgrade -f ./providers/gcp.yaml \
+helm upgrade -f ./providers/${PROVIDER}.yaml \
  --set ksql.enabled=true \
  --set ksql.loadBalancer.enabled=true \
- --set ksql.loadBalancer.domain=mydevplatform.gcp.cloud ksql \
+ --set ksql.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud ksql \
  ./confluent-operator
-echo "Create LB for SchemaRegistry"
-helm upgrade -f ./providers/gcp.yaml \
+ kubectl rollout status sts -n operator ksql
+```
+* Create LoadBalancer for Kafka
+```
+echo "Create LB for Kafka"
+helm upgrade -f ./providers/${PROVIDER}.yaml \
+ --set kafka.enabled=true \
+ --set kafka.loadBalancer.enabled=true \
+ --set kafka.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud kafka \
+ ./confluent-operator
+ kubectl rollout status sts -n operator kafka
+```
+* Create LoadBalancer for Schema Registry
+```
+echo "Create LB for Schemaregistry"
+helm upgrade -f ./providers/${PROVIDER}.yaml \
  --set schemaregistry.enabled=true \
  --set schemaregistry.loadBalancer.enabled=true \
- --set schemaregistry.loadBalancer.domain=mydevplatform.gcp.cloud schemaregistry \
+ --set schemaregistry.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud schemaregistry \
  ./confluent-operator
+ kubectl rollout status sts -n operator schemaregistry
+```
+* Create LoadBalancer for Control Center
+```
 echo "Create LB for Control Center"
-helm upgrade -f ./providers/gcp.yaml \
+helm upgrade -f ./providers/${PROVIDER}.yaml \
  --set controlcenter.enabled=true \
  --set controlcenter.loadBalancer.enabled=true \
- --set controlcenter.loadBalancer.domain=mydevplatform.gcp.cloud controlcenter \
+ --set controlcenter.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud controlcenter \
  ./confluent-operator
+kubectl rollout status sts -n operator controlcenter
 ```
 
-Because we do not want to buy a domain `mydevplatform.gcp.cloud`, we have to add the IPs into our `/etc/hosts` file, so that we can reach the components. 
+Loadbalancers are created please wait a couple of minutes...and check
+```
+kubectl get services -n operator | grep LoadBalancer
+```
+Because we do not want to buy a domain `mydevplatform.provider.cloud`, we have to add the IPs into our `/etc/hosts` file, so that we can reach the components. 
 
 First get the external IP adresses of the load balancer:
 

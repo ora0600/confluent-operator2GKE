@@ -24,3 +24,21 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Ignore Mac system files
+.DS_store
+
+# Ignore node_modules folder
+node_modules
+
+# Ignore all text files
+*.txt
+
+# Ignore PEM private keys
+*.pem
+
+# Ignore files related to API keys
+.env
+
+# Ignore SASS config files
+.sass-cache

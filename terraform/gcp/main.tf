@@ -84,6 +84,6 @@ resource "null_resource" "setup-messaging" {
   ]
 
   provisioner "local-exec" {
-    command = "../01_installConfluentPlatform.sh"
+    command = "../../01_installConfluentPlatform.sh ${var.region} ${var.cprovider}"
   }
 }

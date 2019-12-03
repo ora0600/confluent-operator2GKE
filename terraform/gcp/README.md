@@ -18,6 +18,12 @@ The setup is tested on Mac OS X.
 
 Make sure to have updated versions, e.g. an older version of helm did not work.
 
+## Configure GCP Account and Project
+
+1) Create account.json in `terraform-gcp` directory. You will have to create a [service account on GCP](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) first if you don't have one. Choose the right roles and enable google API. If something is missing terraform let you know. If you already have a Service Account, you can go to your `GCP Console in the web browser --> IAM & admin --> Service Accounts --> Create or Select Key --> Download .json file --> Rename to account.json --> Copy to terraform-gcp directory`
+2) Choose a `GCP project` or create a new one on your cloud console. Terraform will prompt you to specify your project name when applying.
+3) Change the file `variables.tf` in `terraform/gcp` folder. Here you will find entries which have to fit with your environment. You have to set the right region, the node count and preemptible_nodes (cheaper). Mandatory change is `project`: Add your GCP project name or enter the correct GCP project name after terraform apply (it will ask). The others can stay default.
+
 # Quick Start
 
 1. Ensure account.json is in this folder. You will have to [create a service account](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) on GCP first. Choose the right roles and enable google API. If something is missing terraform let you know.
@@ -26,13 +32,19 @@ Make sure to have updated versions, e.g. an older version of helm did not work.
 
 3. Before starting terraform: change the file [variables.tf](variables.tf). Here you will find entries which have to fit with your environment. You have to set the right region, the node count and preemptible_nodes.
 
-4. First Step: Create the environment in Google Cloud: Create the GKE Cluster (you have to enter the project name)
+4. Run `helm init` to refresh the repo of Helm first.
+Run `helm repo update` to refresh the repo of Helm first.
+
+5. First Step: Create the environment in Google Cloud: Create the GKE Cluster (you have to enter the 
+project name)
 ```bash
 # create the GKE Cluster
 terraform init
 terraform plan
 terraform apply
 ```
+6. Follow the  Information to work with the Confluent Setup [go to confluent](../../confluentREADME.md)
+
 # Destroy Infrastructure
 
 * Run 'terraform destroy' to stop and remove the created Kubernetes infrastructure
