@@ -161,7 +161,7 @@ kafka-console-consumer --topic example --bootstrap-server kafka:9071 --consumer.
 ```
 Everything is balance.
 
-## Scale up back to 4 Brokers
+## Scale up to 4 Brokers
 First edit the provider yaml file. It is aws.yaml or gcp.yaml and change kafka replicas back to 4 and run the oprator to scale.
 
 ### AWS
