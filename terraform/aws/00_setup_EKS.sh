@@ -26,5 +26,13 @@ kubectl set resources -n kube-system deployment tiller-deploy --limits=memory=20
 # Create eksadmin service account
 kubectl apply -f eks-admin-service-account.yaml
 
+echo "Check if tiller is running..."
+until kubectl get pod -n kube-system | grep tiller >/dev/null 2>&1; do
+    echo "tiller not yet running"
+    sleep 3
+done
+echo "Tiller is running..."
+sleep 10
+
 echo " EKS cluster created"
 eksctl get cluster

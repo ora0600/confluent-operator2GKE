@@ -9,7 +9,7 @@ terraform/aws/confluent-operator/helm
 helm upgrade \
 -f ./providers/aws.yaml \
 --set controlcenter.enabled=true \
---set controlcenter.image.tag=5.4.0 controlcenter \
+--set controlcenter.image.tag=5.3.0.0 controlcenter \
 ./confluent-operator
 ```
 
@@ -37,3 +37,6 @@ kubectl -n operator get all
 kubectl logs controlcenter-0 -n operator
 ```
 Use your browser to check the new control center [Control Center](http://controlcenter:9021/settings/processing) under Hambuerg menu and then status settings, you will see the new version of 5.3.0 (after refreshing the cache of your brower).
+
+ATTENTION:
+If you run on AWS, please check the IP of the Loadbalancer again. I may possible that has changed and you can not access control-center with the old IP in your /etc/hosts for Control Center.

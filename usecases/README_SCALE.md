@@ -130,7 +130,7 @@ kafka \
 ```
 ## Check the k8s after scale up
 
-One pod more for kafka broker:
+One pod more for kafka broker again 3 Brokers:
 ```
 kubectl get pods -n operator
 ```
@@ -203,9 +203,10 @@ kafka \
 ```
 ## Check the k8s after scale up to 4 Brokers
 
-One pod more for kafka broker:
+One pod more for kafka broker in total 4:
 ```
 kubectl get pods -n operator
+kubectl get nodes
 ```
 It could happen that not enough nodes are available. Then add a new node via Cloud Console UI of your Cloud Provider.
 You will see that if pods kafka-3 is pending. In that the node-pool resize will continue the POD creation of Broker-3 
@@ -255,4 +256,4 @@ Topic:example   PartitionCount:6        ReplicationFactor:3     Configs:min.insy
 # consume all the data
 kafka-console-consumer --topic example --bootstrap-server kafka:9071 --consumer.config kafka.properties --from-beginning
 ```
-Everything is balance.
+Everything is balance. You can also check [control center](http://controlcenter:9021/) and check if everything in balance.

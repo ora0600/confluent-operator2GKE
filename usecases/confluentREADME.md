@@ -26,6 +26,10 @@ The following setup was provisioned:
 ![k8s cluster deployed pods](../images/k8s_cluster.png)
 
 ## test confluent platform on k8s
+First which namespaces are setup:
+```bash
+kubectl get namespace
+```
 
 After the script execution please check again if Confluent Platform cluster is running:
 ```bash

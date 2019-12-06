@@ -28,7 +28,7 @@ export PROVIDER=aws
 
 ### Create LoadBalancer for KSQL
 ```bash
-cd infrastructure/terraform/gcp/confluent-operator/helm/
+cd infrastructure/terraform/${PROVIDER}/confluent-operator/helm/
 # or cd infrastructure/terraform/aws/confluent-operator/helm/
 echo "Create LB for KSQL"
 helm upgrade -f ./providers/${PROVIDER}.yaml \
@@ -84,13 +84,19 @@ kubectl get services -n operator | grep LoadBalancer
 ```
 
 Then edit the `/etc/hosts` file and add the new IPs with hostnames:
+For aws you won#t get the Public IP Adresss please ping the external hosts e.g.
+```bash
+ping a7dd71d73184111eaab430a8209a4a74-1231623882.eu-central-1.elb.amazonaws.com
+...
+```
+and then change your `/etc/hosts`
 
 ```bash
 sudo vi /etc/hosts
 # Add your IPs and the domain names
-EXTERNALIP-OF-KSQL    ksql.mydevplatform.gcp.cloud ksql-bootstrap-lb ksql
-EXTERNALIP-OF-SR      schemaregistry.mydevplatform.gcp.cloud schemaregistry-bootstrap-lb schemaregistry
-EXTERNALIP-OF-C3      controlcenter.mydevplatform.gcp.cloud controlcenter controlcenter-bootstrap-lb
+EXTERNALIP-OF-KSQL    ksql.mydevplatform.${PROVIDER}.cloud ksql-bootstrap-lb ksql
+EXTERNALIP-OF-SR      schemaregistry.mydevplatform.${PROVIDER}.cloud schemaregistry-bootstrap-lb schemaregistry
+EXTERNALIP-OF-C3      controlcenter.mydevplatform.${PROVIDER}.cloud controlcenter controlcenter-bootstrap-lb
 
 # For example, add the line:
 # 34.77.51.245 controlcenter.mydevplatform.gcp.cloud controlcenter controlcenter-bootstrap-lb

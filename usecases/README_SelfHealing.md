@@ -110,7 +110,8 @@ Continue to delete the pod kafka-0 running on the node that is cordoned off.
 ```Bash
 kubectl get pods -n operator
 kubectl delete pod kafka-0 -n operator
-kubectl get pods -o wide -n operator | grep kafka
+# in different terminal
+kubectl get pods -o wide -n operator -w | grep kafka
 # Kafa-0 becomes up and running on a new node gke-cp53-cluster-cp53-node-pool-74668734-mv24
 kafka-0                       1/1     Running   0          2m3s   10.12.8.2    gke-cp53-cluster-cp53-node-pool-74668734-mv24   <none>           <none>
 kafka-1                       1/1     Running   0          19m    10.12.9.3    gke-cp53-cluster-cp53-node-pool-5f4ba227-p9xq   <none>           <none>
@@ -173,3 +174,5 @@ onfluent-rebalancer execute \
 > --verbose \
 > --config-file config.properties
 ```
+
+You can also try tp delete the compute instance of such a cluster node with cloud provider cli tools (aws or gcloud). 
