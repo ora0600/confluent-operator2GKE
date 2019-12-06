@@ -133,22 +133,6 @@ kubectl get pods -o wide -n operator | grep gke-cp53-cluster-cp53-node-pool-7466
 ```
 Ok, Node and Broker is up and running, let's test the topic:
 ```bash
-kubectl -n operator exec -it kafka-0 bash
-# describe topic
-kafka-topics --bootstrap-server kafka:9071 \
---command-config kafka.properties \
---describe --topic example
-# Output Broker 1 is missing
-Topic:example   PartitionCount:6        ReplicationFactor:3     Configs:min.insync.replicas=2,message.format.version=2.3-IV1,max.message.bytes=2097164
-        Topic: example  Partition: 0    Leader: 0       Replicas: 1,0,2 Isr: 0,2,1
-        Topic: example  Partition: 1    Leader: 2       Replicas: 2,1,0 Isr: 2,0,1
-        Topic: example  Partition: 2    Leader: 0       Replicas: 0,2,1 Isr: 0,2,1
-        Topic: example  Partition: 3    Leader: 2       Replicas: 1,2,0 Isr: 2,0,1
-        Topic: example  Partition: 4    Leader: 2       Replicas: 2,0,1 Isr: 2,0,1
-        Topic: example  Partition: 5    Leader: 0       Replicas: 0,1,2 Isr: 0,2,1
-```
-In that case we have to rebalance the brokers again:
-```bash
 kubectl -n operator exec -it kafka-2 bash
 # create a config file
 cat << EOF > config.properties
