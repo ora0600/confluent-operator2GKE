@@ -112,6 +112,11 @@ You can the following in your Control Center
   # set auto.offset.reset=Earliest
   select * from EXAMPLE_S;
   ```
+### AWS Loadblancer have to delete manually
+
+After hands-on with Loadblancer in AWS, please delete all EKS Loadbalancer and attached Security Groups in AWS Console.
+
+
 
 ## 2. Port Forwarding
 

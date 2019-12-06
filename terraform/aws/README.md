@@ -47,9 +47,11 @@ terraform apply
 # destroy the EKS Cluster
 terraform destroy
 ```
+The volumes will not deleted by terraform destroy. So, please delete all dynamic PVC volumes in AWS console.
+
 HINT:
 * Double check in AWS Cloud Console if everything is destroyed: 
-  Kubernetes Engine, Compute Engine and under Compute Engine please check also Disks and Instance Groups. Also Loadbalancers from the Hands-on.
+  Kubernetes Engine, Nodepool and under Compute Engine please check also Volumes, VPC and Internet Gateway. Also Loadbalancers from the Hands-on.
 * It seems to be that the ssd Disk from Confluent will not be deleted, so please delete manually in your AWS console UI.
 * If the destroy takes more than 10 minutes then terraform is throwing an error. 
   Then you have to destory manually via AWS Cloud Console.
