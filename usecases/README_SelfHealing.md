@@ -22,11 +22,10 @@ Topic:example   PartitionCount:6        ReplicationFactor:3     Configs:min.insy
         Topic: example  Partition: 4    Leader: 2       Replicas: 2,0,1 Isr: 2,0,1
         Topic: example  Partition: 5    Leader: 0       Replicas: 0,1,2 Isr: 0,1,2
 ```
-
 Now, killing a broker
 ```bash
 kubectl delete pods kafka-1 -n operator
-kubectl get events --sort-by=.metadata.creationTimestamp -n operator
+# start in new terminal
 kubectl get pods -n operator
 # Cluster is restarting
 kafka-0                       1/1     Running    0          57m
@@ -41,7 +40,9 @@ kafka-0                       1/1     Running   0          58m
 kafka-1                       1/1     Running   0          53s
 kafka-2                       1/1     Running   0          56m
 ```
-After  killing we will check the partitions on brokers again
+After  killing we will check the partitions on brokers again. You could also use the [control-center](http://controlcenter:9021/). The cluster will become into under-replication state, because one broker is missing. But broker will come up immmediatly after a while. No ADB need to execute. 
+## Check on Terminal:
+The terminal said: No, Broker 1 is missing for topic example. But control center said, no everything is fine. So, test, you will see that after a while everything is fine, and also ADB said everything in Balance.
 ```bash
 kubectl -n operator exec -it kafka-0 bash
 # describe topic
@@ -70,6 +71,8 @@ confluent.rebalancer.metrics.security.protocol=SASL_PLAINTEXT
 EOF
 # start the rebalancer
 confluent-rebalancer execute --zookeeper zookeeper:2181/kafka-operator --metrics-bootstrap-server kafka:9071 --throttle 10000000 --verbose --config-file config.properties 
+# Output 
+The cluster is already balanced, exiting.
 # check the status 
 confluent-rebalancer status --zookeeper zookeeper:2181/kafka-operator
 # describe topic
@@ -103,12 +106,12 @@ kubectl get nodes
 #output
 gke-cp53-cluster-cp53-node-pool-74668734-zf85   Ready,SchedulingDisabled   <none>   74m   v1.13.11-gke.14
 ```
-Continue todelete the pod kafka-0 running on the node that is cordoned off.
+Continue to delete the pod kafka-0 running on the node that is cordoned off.
 ```Bash
 kubectl get pods -n operator
 kubectl delete pod kafka-0 -n operator
 kubectl get pods -o wide -n operator | grep kafka
-# Kafa-0 becomes up and running on e new node gke-cp53-cluster-cp53-node-pool-74668734-mv24
+# Kafa-0 becomes up and running on a new node gke-cp53-cluster-cp53-node-pool-74668734-mv24
 kafka-0                       1/1     Running   0          2m3s   10.12.8.2    gke-cp53-cluster-cp53-node-pool-74668734-mv24   <none>           <none>
 kafka-1                       1/1     Running   0          19m    10.12.9.3    gke-cp53-cluster-cp53-node-pool-5f4ba227-p9xq   <none>           <none>
 kafka-2                       1/1     Running   0          74m    10.12.15.3   gke-cp53-cluster-cp53-node-pool-e776ad48-71z5   <none>           <none>
@@ -134,6 +137,13 @@ kubectl get pods -o wide -n operator | grep gke-cp53-cluster-cp53-node-pool-7466
 Ok, Node and Broker is up and running, let's test the topic:
 ```bash
 kubectl -n operator exec -it kafka-2 bash
+# create a kafka.properties file
+cat << EOF > kafka.properties
+bootstrap.servers=kafka:9071
+sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="test" password="test123";
+sasl.mechanism=PLAIN
+security.protocol=SASL_PLAINTEXT
+EOF
 # create a config file
 cat << EOF > config.properties
 confluent.license=
@@ -154,4 +164,12 @@ Topic:example   PartitionCount:6        ReplicationFactor:3     Configs:min.insy
         Topic: example  Partition: 3    Leader: 1       Replicas: 1,2,0 Isr: 2,1,0
         Topic: example  Partition: 4    Leader: 2       Replicas: 2,0,1 Isr: 2,1,0
         Topic: example  Partition: 5    Leader: 0       Replicas: 0,1,2 Isr: 2,1,0
+# Check ADB
+The cluster is already balanced, exiting
+onfluent-rebalancer execute \
+> --zookeeper zookeeper:2181/kafka-operator \
+> --metrics-bootstrap-server kafka:9071 \
+> --throttle 10000000 \
+> --verbose \
+> --config-file config.properties
 ```

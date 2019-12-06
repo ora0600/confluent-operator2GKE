@@ -19,6 +19,12 @@ Please, go first in the right directory for
   * GCP `cd terraform/gcp`
 
 Please replace `${PROVIDER}` with gcp or aws, depends on which cloud provider you work currently.
+```bash
+# Set the env for google GKE
+export PROVIDER=gcp
+# Set the env for aws EKS
+export PROVIDER=aws
+```
 
 ### Create LoadBalancer for KSQL
 ```bash
@@ -53,9 +59,7 @@ helm upgrade -f ./providers/${PROVIDER}.yaml \
  kubectl rollout status sts -n operator controlcenter
 ```
 
-
-
-### Create LoadBalancer for Kafka
+### (Optional) Create LoadBalancer for Kafka
 ```BASH
 echo "Create LB for Kafka"
 helm upgrade -f ./providers/${PROVIDER}.yaml \
@@ -90,6 +94,7 @@ EXTERNALIP-OF-C3      controlcenter.mydevplatform.gcp.cloud controlcenter contro
 
 # For example, add the line:
 # 34.77.51.245 controlcenter.mydevplatform.gcp.cloud controlcenter controlcenter-bootstrap-lb
+...
 ```
 
 Now you access the Confluent Control Center externally. Open your Brower and copy the URL: [http://controlcenter:9021/](http://controlcenter:9021/) and enter User=admin and password=Developer1. 
@@ -117,7 +122,7 @@ kubectl get pods schema-registry-0 -n operator --template='{{(index (index .spec
 kubectl get pods kafka-0 -n operator --template='{{(index (index .spec.containers 0).ports 0).containerPort}}{{"\n"}}'
 ```
 
-You can do for each Confluent component create one port-fowarding, e.g. Control Center:
+You can do this for each Confluent component, create one port-fowarding, e.g. Control Center:
 
 ```bash
 # Port Forward Control Center
@@ -126,7 +131,7 @@ kubectl port-forward controlcenter-0 -n operator 7000:9021
 
 Now, you can open your brower and run the control center locally on Port 7000 [Control Center](http://localhost:7000)). Please enter Username=admin and Password=Developer1
 
-If you want to forward multiple ports locally then use an utility. E.g. kubefwd;
+If you want to forward multiple ports locally then use better an utility. E.g. kubefwd;
 
 ```bash
 # make sure context is set

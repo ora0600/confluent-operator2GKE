@@ -2,7 +2,8 @@
 
 If you did run already `terraform apply` in [terraform/aws](terraform/aws) or [terraform/gcp](terraform/gcp) then you deployed the following objects:
 * K8s dashboard 
- 1. use for gcp `gcloud config config-helper --format=json | jq -r ‘.credential.access_token’` for login
+ See above how to start k8s dashboard, you need a token to access
+ 1. use for gcp `gcloud config config-helper --format=json | jq -r '.credential.access_token'` for login
  2. use for aws `kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep eks-admin | awk '{print $1}')`
 * Confluent Operator
 * Confluent Cluster running in Multi-Zone with with replica of 3 for Zookeeper and Kafka Broker
@@ -47,6 +48,18 @@ Check the services
 ```bash
 kubectl get services -n operator
 ```
+Check the nodes of k8s cluster
+```bash
+# get  Nodes
+kubectl get node
+```
+Check events happening during deployment:
+```bash
+# List Events sorted by timestamp
+kubectl get events --sort-by=.metadata.creationTimestamp -n operator
+kubectl get events -n operator
+```
+
 ## K8s Dashboard
 
 * Run `kubectl proxy &`
@@ -118,7 +131,7 @@ Go into the KSQL Server and play around with KSQL CLI:
 kubectl -n operator exec -it ksql-0 bash
 $ ksql
 ksql> list topics;
-ksql> PRINT 'sensor-data' FROM BEGINNING;
+ksql> PRINT 'example' FROM BEGINNING;
 ksql> list streams;
 ksql> list tables;
 ksql> 

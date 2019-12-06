@@ -23,18 +23,17 @@ helm upgrade \
 ./confluent-operator
 ```
 
-# Check Upgrade
-## Check the k8s after scale down
+# Check Upgrade of Control Center to 5.3.0
 
-One pod less for kafka broker:
+A new container will be pulled and control center will be started with new version. You will see this best with 
+```bash
+kubectl get events --sort-by=.metadata.creationTimestamp -n operator
 ```
-kubectl get events -n operator
+Additional commands to debug your environment.
+```bash
 kubectl get pods -n operator
 kubectl get services -n operator | grep LoadBalancer
 kubectl -n operator get all
 kubectl logs controlcenter-0 -n operator
 ```
-Use your browser to check the new control center [Control Center](http://controlcenter:9021)
-
-
-kubectl logs controlcenter-0 -n operator
+Use your browser to check the new control center [Control Center](http://controlcenter:9021/settings/processing) under Hambuerg menu and then status settings, you will see the new version of 5.3.0 (after refreshing the cache of your brower).
