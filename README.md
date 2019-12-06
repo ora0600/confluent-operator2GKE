@@ -47,6 +47,7 @@ Find a couple of use cases how to use Confluent Operator within a K8s deployment
  * Deploy Load Balancer to get external access to your confluent cluster [Readme](usecases/README_LB.md)
  * Scale down and Scale up the Confluent Cluster [Readme](usecases/README_SCALE.md)
  * Doing a version Upgrade from 5.3.1 to 5.4.0 [Readme](usecases/README_UPGRADE.md)
+ * Finally we will simulate some crashed and see what is happining [Readme](usecases/README_SelfHealing.md)
 
 
 # Open Source and License Requirements
