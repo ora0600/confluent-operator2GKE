@@ -26,12 +26,12 @@ Now, killing a broker
 ```bash
 kubectl delete pods kafka-1 -n operator
 # start in new terminal
-kubectl get pods -n operator
+kubectl get pods -n operator -w
 # Cluster is restarting
 kafka-0                       1/1     Running    0          57m
 kafka-1                       0/1     Init:0/1   0          5s
 kafka-2                       1/1     Running    0          55m
-# Check again
+# running but not ready
 kafka-0                       1/1     Running   0          58m
 kafka-1                       0/1     Running   0          24s
 kafka-2                       1/1     Running   0          55m
@@ -69,7 +69,7 @@ confluent.rebalancer.metrics.sasl.jaas.config=org.apache.kafka.common.security.p
 confluent.rebalancer.metrics.bootstrap.servers=kafka:9071
 confluent.rebalancer.metrics.security.protocol=SASL_PLAINTEXT
 EOF
-# start the rebalancer
+# start the rebalancer to check on the prompt if ervything is in balance
 confluent-rebalancer execute --zookeeper zookeeper:2181/kafka-operator --metrics-bootstrap-server kafka:9071 --throttle 10000000 --verbose --config-file config.properties 
 # Output 
 The cluster is already balanced, exiting.
@@ -165,7 +165,7 @@ Topic:example   PartitionCount:6        ReplicationFactor:3     Configs:min.insy
         Topic: example  Partition: 3    Leader: 1       Replicas: 1,2,0 Isr: 2,1,0
         Topic: example  Partition: 4    Leader: 2       Replicas: 2,0,1 Isr: 2,1,0
         Topic: example  Partition: 5    Leader: 0       Replicas: 0,1,2 Isr: 2,1,0
-# Check ADB
+# Check with ADB on the prompt if cluster is in balance
 The cluster is already balanced, exiting
 onfluent-rebalancer execute \
 > --zookeeper zookeeper:2181/kafka-operator \
@@ -174,5 +174,4 @@ onfluent-rebalancer execute \
 > --verbose \
 > --config-file config.properties
 ```
-
-You can also try tp delete the compute instance of such a cluster node with cloud provider cli tools (aws or gcloud). 
+You can also try to delete the compute instance of such a cluster node with cloud provider cli tools (aws or gcloud). 

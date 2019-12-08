@@ -68,25 +68,8 @@ Topic:example   PartitionCount:6        ReplicationFactor:3     Configs:min.insy
         Topic: example  Partition: 3    Leader: 1       Replicas: 1,2,0 Isr: 1,0
         Topic: example  Partition: 4    Leader: 0       Replicas: 2,0,1 Isr: 1,0
         Topic: example  Partition: 5    Leader: 0       Replicas: 0,1,2 Isr: 1,0
-# create a config file
-cat << EOF > config.properties
-confluent.license=
-confluent.rebalancer.metrics.sasl.mechanism=PLAIN
-confluent.rebalancer.metrics.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="test" password="test123";
-confluent.rebalancer.metrics.bootstrap.servers=kafka:9071
-confluent.rebalancer.metrics.security.protocol=SASL_PLAINTEXT
-EOF
-# run ADB
-confluent-rebalancer execute \
---zookeeper zookeeper:2181/kafka-operator \
---metrics-bootstrap-server kafka:9071 \
---throttle 10000000 \
---verbose \
---config-file config.properties \
---remove-broker-ids 2
-# ADB failed
 ```
-The setup is as followed: ReplicationFactor:3 for all topics. Check control center [http://controlcenter:9021/](http://controlcenter:9021/). Because of the Replication-Factor setup ADB is not able to get all the metrics. So, the Balancer can't help here. Please do now a Scale-up to 3 Brokers
+The setup is as followed: ReplicationFactor:3 for all topics. Check control center [http://controlcenter:9021/](http://controlcenter:9021/). Because of the Replication-Factor setup. Please do now a Scale-up to 3 Brokers
 
 ## Scale up back to 3 Broker
 First edit the provider yaml file. It is aws.yaml or gcp.yaml and change kafka replicas back to 3 and run the oprator to scale.
@@ -152,14 +135,14 @@ confluent.rebalancer.metrics.sasl.jaas.config=org.apache.kafka.common.security.p
 confluent.rebalancer.metrics.bootstrap.servers=kafka:9071
 confluent.rebalancer.metrics.security.protocol=SASL_PLAINTEXT
 EOF
-# start the rebalancer
+# start the rebalancer to check if everything is balance
 confluent-rebalancer execute --zookeeper zookeeper:2181/kafka-operator --metrics-bootstrap-server kafka:9071 --throttle 10000000 --verbose --config-file config.properties 
 # Output
 The cluster is already balanced, exiting.
 # consume all the data
 kafka-console-consumer --topic example --bootstrap-server kafka:9071 --consumer.config kafka.properties --from-beginning
 ```
-Everything is balance.
+Everything is balance, all Broker up and running.
 
 ## Scale up to 4 Brokers
 First edit the provider yaml file. It is aws.yaml or gcp.yaml and change kafka replicas back to 4 and run the oprator to scale.
