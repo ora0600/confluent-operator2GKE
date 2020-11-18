@@ -7,10 +7,10 @@ Try first to scale down and afterwards to scale up again:
 First edit the provider yaml file. It is aws.yaml or gcp.yaml and change kafka replicas to 2 and run the oprator to scale.
 
 ### AWS
-For AWS we will use : `terraform/aws/confluent-operator/helm/provider/aws.yaml`
+For AWS we will use : `terraform/aws/aws.yaml`
 ```bash
-cd terraform/aws/confluent-operator/helm/
-vi providers/aws.yaml
+cd terraform/aws/
+vi aws.yaml
 kafka:
   name: kafka
   replicas: 2
@@ -18,18 +18,18 @@ kafka:
 Now, run the oprator to scale down:
 ```bash
 cd terraform/aws/confluent-operator/helm/
-helm upgrade -f \
-./providers/aws.yaml \
---set kafka.enabled=true \
+helm upgrade --install \
 kafka \
-./confluent-operator
+./confluent-operator  -f ../../aws.yaml \
+ --namespace operator \
+ --set kafka.enabled=true
 ```
 
 ### GCP
-For GCP we will use `terraform/gcp/confluent-operator/helm/provider/gcp.yaml`
+For GCP we will use `terraform/gcp/gcp.yaml`
 ```bash
-cd terraform/gcp/confluent-operator/helm/
-vi providers/gcp.yaml
+cd terraform/gcp/
+vi gcp.yaml
 kafka:
   name: kafka
   replicas: 2
@@ -37,18 +37,18 @@ kafka:
 Now, run the oprator to scale down:
 ```bash
 cd terraform/gcp/confluent-operator/helm/
-helm upgrade -f \
-./providers/gcp.yaml \
---set kafka.enabled=true \
+helm upgrade --install \
 kafka \
-./confluent-operator
+./confluent-operator  -f ../../gcp.yaml \
+ --namespace operator \
+ --set kafka.enabled=true
 ```
 Always the highest broker will be killed: in our casse broker-2
 
 ## Check the k8s after scale down
 
 One pod less for kafka broker:
-```
+```bash
 kubectl get pods -n operator
 # check events running after upgrade
 kubectl get events --sort-by=.metadata.creationTimestamp -n operator
@@ -57,6 +57,10 @@ Check the partitions of the topic examples:
 ```bash
 kubectl -n operator exec -it kafka-0 bash
 # describe topic or just check control center http://controlcenter:9021/
+echo "bootstrap.servers=kafka:9071
+sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="test" password="test123";
+sasl.mechanism=PLAIN
+security.protocol=SASL_PLAINTEXT" > kafka.properties
 kafka-topics --bootstrap-server kafka:9071 \
 --command-config kafka.properties \
 --describe --topic example
@@ -75,10 +79,10 @@ The setup is as followed: ReplicationFactor:3 for all topics. Check control cent
 First edit the provider yaml file. It is aws.yaml or gcp.yaml and change kafka replicas back to 3 and run the oprator to scale.
 
 ### AWS
-For AWS we will use : `terraform/aws/confluent-operator/helm/provider/aws.yaml`
+For AWS we will use : `terraform/aws/aws.yaml`
 ```bash
-cd terraform/aws/confluent-operator/helm/
-vi providers/aws.yaml
+cd terraform/aws
+vi aws.yaml
 kafka:
   name: kafka
   replicas: 3
@@ -86,18 +90,18 @@ kafka:
 Now, run the oprator to scale down:
 ```bash
 cd terraform/aws/confluent-operator/helm/
-helm upgrade -f \
-./providers/aws.yaml \
---set kafka.enabled=true \
+helm upgrade --install \
 kafka \
-./confluent-operator
+./confluent-operator  -f ../../aws.yaml \
+ --namespace operator \
+ --set kafka.enabled=true
 ```
 ### GCP
 
-For GCP we will use `terraform/gcp/confluent-operator/helm/provider/gcp.yaml`
+For GCP we will use `terraform/gcp/gcp.yaml`
 ```bash
-cd terraform/gcp/confluent-operator/helm/
-vi providers/gcp.yaml
+cd terraform/gcp
+vi gcp.yaml
 kafka:
   name: kafka
   replicas: 3
@@ -105,11 +109,11 @@ kafka:
 Now, run the oprator to scale down:
 ```bash
 cd terraform/gcp/confluent-operator/helm/
-helm upgrade -f \
-./providers/gcp.yaml \
---set kafka.enabled=true \
+helm upgrade --install \
 kafka \
-./confluent-operator
+./confluent-operator  -f ../../gcp.yaml \
+ --namespace operator \
+ --set kafka.enabled=true
 ```
 ## Check the k8s after scale up
 
@@ -125,33 +129,20 @@ kafka-topics --bootstrap-server kafka:9071 \
 --command-config kafka.properties \
 --describe --topic example
 ```
-As you can see the partitions are shared on all three brokers and Controlcenter [http://controlcenter:9021/](http://controlcenter:9021/) takes a while to show that verything is in balance. Check also auto data balancer.
+As you can see the partitions are shared on all three brokers and Controlcenter [http://controlcenter:9021/](http://controlcenter:9021/) takes a while to show that everything is in balance.
 ```bash
-# create a config file
-cat << EOF > config.properties
-confluent.license=
-confluent.rebalancer.metrics.sasl.mechanism=PLAIN
-confluent.rebalancer.metrics.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="test" password="test123";
-confluent.rebalancer.metrics.bootstrap.servers=kafka:9071
-confluent.rebalancer.metrics.security.protocol=SASL_PLAINTEXT
-EOF
-# start the rebalancer to check if everything is balance
-confluent-rebalancer execute --zookeeper zookeeper:2181/kafka-operator --metrics-bootstrap-server kafka:9071 --throttle 10000000 --verbose --config-file config.properties 
-# Output
-The cluster is already balanced, exiting.
 # consume all the data
 kafka-console-consumer --topic example --bootstrap-server kafka:9071 --consumer.config kafka.properties --from-beginning
 ```
-Everything is balance, all Broker up and running.
 
 ## Scale up to 4 Brokers
 First edit the provider yaml file. It is aws.yaml or gcp.yaml and change kafka replicas back to 4 and run the oprator to scale.
 
 ### AWS
-For AWS we will use : `terraform/aws/confluent-operator/helm/provider/aws.yaml`
+For AWS we will use : `terraform/aws/aws.yaml`
 ```bash
-cd terraform/aws/confluent-operator/helm/
-vi providers/aws.yaml
+cd terraform/aws
+vi aws.yaml
 kafka:
   name: kafka
   replicas: 4
@@ -159,18 +150,18 @@ kafka:
 Now, run the oprator to scale down:
 ```bash
 cd terraform/aws/confluent-operator/helm/
-helm upgrade -f \
-./providers/aws.yaml \
---set kafka.enabled=true \
+helm upgrade --install \
 kafka \
-./confluent-operator
+./confluent-operator  -f ../../aws.yaml \
+ --namespace operator \
+ --set kafka.enabled=true
 ```
 ### GCP
 
-For GCP we will use `terraform/gcp/confluent-operator/helm/provider/gcp.yaml`
+For GCP we will use `terraform/gcp/gcp.yaml`
 ```bash
-cd terraform/gcp/confluent-operator/helm/
-vi providers/gcp.yaml
+cd terraform/gcp
+vi gcp.yaml
 kafka:
   name: kafka
   replicas: 4
@@ -178,11 +169,11 @@ kafka:
 Now, run the oprator to scale down:
 ```bash
 cd terraform/gcp/confluent-operator/helm/
-helm upgrade -f \
-./providers/gcp.yaml \
---set kafka.enabled=true \
+helm upgrade --install \
 kafka \
-./confluent-operator
+./confluent-operator  -f ../../gcp.yaml \
+ --namespace operator \
+ --set kafka.enabled=true
 ```
 ## Check the k8s after scale up to 4 Brokers
 
@@ -209,21 +200,6 @@ kafka-topics --bootstrap-server kafka:9071 \
 --command-config kafka.properties \
 --describe --topic example
 ```
-As you can see the partitions are shared on all three brokers but now we have 4 Brokers. In that case Auto Data Balancer need to be execute.
-```bash
-# create a config file
-cat << EOF > config.properties
-confluent.license=
-confluent.rebalancer.metrics.sasl.mechanism=PLAIN
-confluent.rebalancer.metrics.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="test" password="test123";
-confluent.rebalancer.metrics.bootstrap.servers=kafka:9071
-confluent.rebalancer.metrics.security.protocol=SASL_PLAINTEXT
-EOF
-# start the rebalancer
-confluent-rebalancer execute --zookeeper zookeeper:2181/kafka-operator --metrics-bootstrap-server kafka:9071 --throttle 10000000 --verbose --config-file config.properties 
-# Enter y to execute the plan
-# check the status of ADB
-confluent-rebalancer status --zookeeper zookeeper:2181/kafka-operator
 # describe topic
 kafka-topics --bootstrap-server kafka:9071 \
 --command-config kafka.properties \

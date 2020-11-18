@@ -1,23 +1,20 @@
 # Create AWS K8s 
 
 Applying this terraform deployment will create a K8s cluster with the following deployed:
-
-* Tiller
 * Confluent Platform
 
 # Requirements
 The following components are required:
 
 * jq: e.g. 'brew install jq'
-* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/): e.g. brew install kubernetes-cli (tested with 1.16.0)
-* helm: e.g. `brew install kubernetes-helm` (tested with 2.14.3)
-* [terraform (0.12)](https://www.terraform.io/downloads.html): e.g. brew install terraform
+* [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/): e.g. brew install kubernetes-cli (tested with 1.19.4)
+* [terraform (0.12.19)](https://www.terraform.io/downloads.html): e.g. brew install terraform
 * [aws cli ](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) for AWS Cloud: Tool that provides the primary CLI to AWS Cloud Platform
-* [eksctl ](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html) for AWS Cloud: Tool that provides the primary CLI to AWS EKS Cloud Service.
+* [eksctl ](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html) for AWS Cloud: Tool that provides the primary CLI to AWS EKS Cloud Service. We use to work with version 0.31
 
 The setup is tested on Mac OS X.
 
-Make sure to have updated versions, e.g. an older version of helm did not work.
+Make sure to have updated versions.
 
 ## Configure AWS Account 
 
@@ -26,12 +23,13 @@ Make sure to have updated versions, e.g. an older version of helm did not work.
 
 # Quick Start
 
-1. Ensure Access Key/Secret is set in `terraform/aws/variables.tf`. 
+1. Ensure our `~/.aws/credentials` are setup correctly. Execute `aws configure` and set APK Key, API Scret, Region to `eu-central-1` and output to `json`. 
 
-2. Before starting terraform: change the file [variables.tf](variables.tf). Here you will find entries which have to fit with your environment. You have to set the right region, AZ count, the node count and access key and access secret. The others can stay default.
+2. Ensure Access Key/Secret is set in `terraform/aws/variables.tf`. 
 
-4. Run `helm init` to refresh the repo of Helm first.
-Run `helm repo update` to refresh the repo of Helm first.
+3. Run `helm repo update` to refresh the repo of Helm first.
+
+4. Before starting terraform: change the file [variables.tf](variables.tf). Here you will find entries which have to fit with your environment. You have to set the right region, AZ count, the node count and access key and access secret. The others can stay default.
 
 5. First Step: Create the environment in AWS Cloud: Create the EKS Cluster 
 ```bash
@@ -40,14 +38,32 @@ terraform init
 terraform plan
 terraform apply
 ```
+6. go to [use cases](https://github.com/ora0600/confluent-operator2GKE#following-use-cases-can-be-executed) and start your hands-on
+
 # Destroy Infrastructure
+
+We do a force delete. For this you need eksctl 0.31 or later. [Install/Upgrade](https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html#installing-eksctl)
 
 * Run 'terraform destroy' to stop and remove the created Kubernetes infrastructure
 ```bash
 # destroy the EKS Cluster
 terraform destroy
 ```
+Because the destroy of node cluster takes a while, terraform will throw an error. Check if node pool is in deleting status. Wait and execute again:
+```bash
+# again destroy after node pool is deleted
+terraform destroy
+rm -r confluent-operator/
+```
+
+If this is happeing check if node cluster is deleting.
 The volumes will not deleted by terraform destroy. So, please delete all dynamic PVC volumes in AWS console.
+Delete manually:
+```bash
+aws eks list-nodegroups --cluster-name cp-60-cluster
+aws eks delete-nodegroup --nodegroup-name cp60 --cluster-name cp-60-cluster
+ aws eks delete-cluster --name cp-60-cluster
+```
 
 HINT:
 * Double check in AWS Cloud Console if everything is destroyed: 

@@ -2,15 +2,15 @@
 # Variables Configuration
 #
 variable "aws_access_key" {
-  default = ""
+  default = "put in our own key"
 }
 
 variable "aws_secret_key" {
-  default = ""
+  default = "put in your own secret"
 }
 
 variable "cluster-name" {
-  default = "cp-53-cluster"
+  default = "cp-60-cluster"
   type    = "string"
 }
 

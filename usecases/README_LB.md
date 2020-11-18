@@ -28,46 +28,54 @@ export PROVIDER=aws
 
 ### Create LoadBalancer for KSQL
 ```bash
-cd infrastructure/terraform/${PROVIDER}/confluent-operator/helm/
-# or cd infrastructure/terraform/aws/confluent-operator/helm/
+cd terraform/gcp/confluent-operator/helm
+# or cd terraform/aws/confluent-operator/helm/
 echo "Create LB for KSQL"
-helm upgrade -f ./providers/${PROVIDER}.yaml \
- --set ksql.enabled=true \
- --set ksql.loadBalancer.enabled=true \
- --set ksql.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud ksql \
- ./confluent-operator
- kubectl rollout status sts -n operator ksql
+helm upgrade --install \
+ksql \
+./confluent-operator  -f ../../${PROVIDER}.yaml \
+--namespace operator \
+--set ksql.enabled=true \
+--set ksql.loadBalancer.enabled=true \
+--set ksql.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud
+kubectl rollout status sts -n operator ksql
 ```
 ### Create LoadBalancer for Schema Registry
 ```BASH
 echo "Create LB for Schemaregistry"
-helm upgrade -f ./providers/${PROVIDER}.yaml \
+helm upgrade --install \
+schemaregistry \
+./confluent-operator  -f ../../${PROVIDER}.yaml \
+ --namespace operator \
  --set schemaregistry.enabled=true \
  --set schemaregistry.loadBalancer.enabled=true \
- --set schemaregistry.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud schemaregistry \
- ./confluent-operator
+ --set schemaregistry.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud  
  kubectl rollout status sts -n operator schemaregistry
 ```
 ### Create LoadBalancer for Control Center
 ```BASH
 echo "Create LB for Control Center"
-helm upgrade -f ./providers/${PROVIDER}.yaml \
+helm upgrade --install \
+controlcenter \
+./confluent-operator  -f ../../${PROVIDER}.yaml \
+ --namespace operator \
  --set controlcenter.enabled=true \
  --set controlcenter.loadBalancer.enabled=true \
- --set controlcenter.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud controlcenter \
- ./confluent-operator
- kubectl rollout status sts -n operator controlcenter
+ --set controlcenter.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud
+kubectl rollout status sts -n operator controlcenter
 ```
 
 ### (Optional) Create LoadBalancer for Kafka
 ```BASH
 echo "Create LB for Kafka"
-helm upgrade -f ./providers/${PROVIDER}.yaml \
+helm upgrade --install \
+kafka \
+./confluent-operator  -f ../../${PROVIDER}.yaml \
+ --namespace operator \
  --set kafka.enabled=true \
  --set kafka.loadBalancer.enabled=true \
- --set kafka.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud kafka \
- ./confluent-operator
- kubectl rollout status sts -n operator kafka
+ --set kafka.loadBalancer.domain=mydevplatform.${PROVIDER}.cloud
+kubectl rollout status sts -n operator kafka
 ```
 
 ### Check Loadbalancers und setup local hosts

@@ -1,15 +1,15 @@
 resource "null_resource" "setup-cluster" {
   depends_on = [
-    aws_eks_cluster.cp60
+    azurerm_kubernetes_cluster.cp60
   ]
   triggers = {
-    id = aws_eks_cluster.cp60.id
+    id = azurerm_kubernetes_cluster.cp60.id
     // Re-run script on deployment script changes
-    script = sha1(file("00_setup_EKS.sh"))
+    script = sha1(file("00_setup_AKS.sh"))
   }
 
   provisioner "local-exec" {
-    command = "./00_setup_EKS.sh ${var.aws_region} ${var.cluster-name}"
+    command = "./00_setup_AKS.sh ${var.location}  ${var.cluster_name} ${var.resource_group_name}"
   }
 }
 
@@ -19,6 +19,6 @@ resource "null_resource" "setup-messaging" {
   ]
 
   provisioner "local-exec" {
-    command = "../01_installConfluentPlatform.sh ${var.aws_region} ${var.cprovider}"
+    command = "../01_installConfluentPlatform.sh ${var.location} ${var.cprovider}"
   }
 }

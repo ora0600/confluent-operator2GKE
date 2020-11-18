@@ -9,7 +9,7 @@ resource "google_container_cluster" "cluster" {
     delete = "120m"
   }
 
-  name = "cp53-cluster"
+  name = var.name
   location = var.region
 
   maintenance_policy {
@@ -31,9 +31,10 @@ resource "google_container_cluster" "cluster" {
 
 }
 
-resource "google_container_node_pool" "primary_preemptible_nodes" {
-  name = "cp53-node-pool"
+resource "google_container_node_pool" "primary_nodes" {
+  name = "cp-node-pool-${var.name}"
   location = var.region
+
   cluster = google_container_cluster.cluster.name
   node_count = var.node_count
   node_config {
@@ -50,14 +51,14 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
       "https://www.googleapis.com/auth/monitoring",
     ]
   }
+  
+  autoscaling {
+    max_node_count = var.node_count
+    min_node_count = 1
+  }
 
   management {
     auto_upgrade = false
-  }
-
-  provisioner "local-exec" {
-    command = "./destroy.sh"
-    when = "destroy"
   }
 }
 
@@ -79,10 +80,16 @@ resource "null_resource" "setup-cluster" {
 }
 
 resource "null_resource" "setup-messaging" {
-  depends_on = [
+  depends_on = [     
     null_resource.setup-cluster
   ]
   provisioner "local-exec" {
     command = "../01_installConfluentPlatform.sh ${var.region} ${var.cprovider}"
   }
+
+  provisioner "local-exec" {
+    command = "./destroy.sh ${var.project} ${var.region} ${var.name} ${var.cprovider}"
+    when = "destroy"
+  }
+
 }

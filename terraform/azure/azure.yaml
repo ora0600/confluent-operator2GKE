@@ -1,25 +1,10 @@
 ## Overriding values for Chart's values.yaml
-## Example values to run Confluent Operator in GCP
+## Example values to run Confluent Operator in Azure
 global:
   provider:
-    name: gcp
-    region: europe-west1
-    kubernetes:
-       deployment:
-         ## If kubernetes is deployed in multi zone mode then specify availability-zones as appropriate
-         ## If kubernetes is deployed in single availability zone then specify appropriate values
-         zones:
-          - europe-west1-b
-          - europe-west1-c
-          - europe-west1-d
-    storage:
-      ## https://kubernetes.io/docs/concepts/storage/storage-classes/#gce
-      ##
-      provisioner: kubernetes.io/gce-pd
-      ## Use Retain if you want to persist data after CP cluster has been uninstalled
-      reclaimPolicy: Delete
-      parameters:
-        type: pd-ssd
+    name: azure
+    ## region
+    region: germanywestcentral
     ## Docker registry endpoint where Confluent Images are available.
     ##
     registry:
@@ -30,7 +15,16 @@ global:
     plain:
       username: test
       password: test123
-
+  authorization:
+    rbac:
+      enabled: false
+    simple:
+      enabled: false
+    superUsers: []
+  dependencies:
+    mds:
+      endpoint: ""
+      publicKey: ""
 ## Zookeeper cluster
 ##
 zookeeper:
@@ -45,28 +39,26 @@ zookeeper:
 ##
 kafka:
   name: kafka
-  replicas: 3 
+  replicas: 3
   resources:
     requests:
       cpu: 200m
       memory: 1Gi
-  volume:
-    data0: 100Gi
   loadBalancer:
     enabled: false
-    domain: "mydevplatform.gcp.cloud"
+    domain: ""
   tls:
     enabled: false
     fullchain: |-
     privkey: |-
     cacerts: |-
   metricReporter:
-    enabled: true
+    enabled: false
 
 ## Connect Cluster
- ##
+##
 connect:
-  name: connect
+  name: connectors
   replicas: 1
   tls:
     enabled: false
@@ -78,7 +70,7 @@ connect:
     cacerts: |-
   loadBalancer:
     enabled: false
-    domain: "mydevplatform.gcp.cloud"
+    domain: ""
   dependencies:
     kafka:
       bootstrapEndpoint: kafka:9071
@@ -86,7 +78,6 @@ connect:
     schemaRegistry:
       enabled: true
       url: http://schemaregistry:8081
-
 ## Replicator Connect Cluster
 ##
 replicator:
@@ -106,7 +97,6 @@ replicator:
     kafka:
       brokerCount: 3
       bootstrapEndpoint: kafka:9071
-
 ##
 ## Schema Registry
 ##
@@ -122,7 +112,7 @@ schemaregistry:
     cacerts: |-
   loadBalancer:
     enabled: false
-    domain: "mydevplatform.gcp.cloud"
+    domain: ""
   dependencies:
     kafka:
       brokerCount: 3
@@ -143,14 +133,14 @@ ksql:
     cacerts: |-
   loadBalancer:
     enabled: false
-    domain: "mydevplatform.gcp.cloud"
+    domain: ""
   dependencies:
     kafka:
       brokerCount: 3
       bootstrapEndpoint: kafka:9071
       brokerEndpoints: kafka-0.kafka:9071,kafka-1.kafka:9071,kafka-2.kafka:9071
     schemaRegistry:
-      enabled: true
+      enabled: false
       tls:
         enabled: false
         authentication:
@@ -162,8 +152,6 @@ ksql:
 controlcenter:
   name: controlcenter
   license: ""
-  volume:
-    data0: 100Gi
   ##
   ## C3 dependencies
   ##
@@ -175,10 +163,10 @@ controlcenter:
         endpoint: zookeeper:2181
     connectCluster:
       enabled: true
-      url: http://connect:8083
+      url: http://connectors:8083
     ksql:
       enabled: true
-      url: http://ksql:8088
+      url: http://ksql:9088
     schemaRegistry:
       enabled: true
       url: http://schemaregistry:8081
@@ -187,7 +175,7 @@ controlcenter:
   ##
   loadBalancer:
     enabled: false
-    domain: "mydevplatform.gcp.cloud"
+    domain: ""
   ##
   ## TLS configuration
   ##

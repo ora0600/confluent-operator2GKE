@@ -3,7 +3,14 @@
 .AppleDouble
 .LSOverride
 
-#cloud files
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+env-vars
 account.json
 
 # Icon must end with two \r

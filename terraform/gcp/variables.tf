@@ -1,10 +1,15 @@
 variable "node_count" {
-  default = 4
+  default = 3
 }
 
 variable "region" {
   default = "europe-west1"
 }
+
+variable "zone" {
+  default = "europe-west1-b"
+}
+
 
 variable "preemptible_nodes" {
   default = "false"
@@ -12,6 +17,12 @@ variable "preemptible_nodes" {
 
 variable "daily_maintenance_window_start_time" {
   default = "02:00"
+}
+
+variable name {
+  type = "string"
+  default = "cp60-cluster"
+  description = "Name for the GKE cluster"
 }
 
 variable "cprovider" {

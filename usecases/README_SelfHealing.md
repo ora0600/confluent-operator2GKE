@@ -50,44 +50,25 @@ kafka-topics --bootstrap-server kafka:9071 \
 --command-config kafka.properties \
 --describe --topic example
 # Output Broker 1 is missing
+Topic: example  PartitionCount: 6       ReplicationFactor: 3    Configs: min.insync.replicas=2,message.format.version=2.3-IV1,max.message.bytes=2097164
+        Topic: example  Partition: 0    Leader: 0       Replicas: 0,1,2 Isr: 0,2,1      Offline: 
+        Topic: example  Partition: 1    Leader: 2       Replicas: 1,2,0 Isr: 0,2,1      Offline: 
+        Topic: example  Partition: 2    Leader: 2       Replicas: 2,0,1 Isr: 0,2,1      Offline: 
+        Topic: example  Partition: 3    Leader: 0       Replicas: 0,2,1 Isr: 0,2,1      Offline: 
+        Topic: example  Partition: 4    Leader: 0       Replicas: 1,0,2 Isr: 0,2,1      Offline: 
+        Topic: example  Partition: 5    Leader: 2       Replicas: 2,1,0 Isr: 0,2,1      Offline: 
+# Output all Broker are there
 Topic:example   PartitionCount:6        ReplicationFactor:3     Configs:min.insync.replicas=2,message.format.version=2.3-IV1,max.message.bytes=2097164
-        Topic: example  Partition: 0    Leader: 0       Replicas: 1,0,2 Isr: 0,2,1
-        Topic: example  Partition: 1    Leader: 2       Replicas: 2,1,0 Isr: 2,0,1
-        Topic: example  Partition: 2    Leader: 0       Replicas: 0,2,1 Isr: 0,2,1
-        Topic: example  Partition: 3    Leader: 2       Replicas: 1,2,0 Isr: 2,0,1
-        Topic: example  Partition: 4    Leader: 2       Replicas: 2,0,1 Isr: 2,0,1
-        Topic: example  Partition: 5    Leader: 0       Replicas: 0,1,2 Isr: 0,2,1
+Topic: example  PartitionCount: 6       ReplicationFactor: 3    Configs: min.insync.replicas=2,message.format.version=2.3-IV1,max.message.bytes=2097164
+        Topic: example  Partition: 0    Leader: 0       Replicas: 0,1,2 Isr: 0,2,1      Offline: 
+        Topic: example  Partition: 1    Leader: 1       Replicas: 1,2,0 Isr: 0,2,1      Offline: 
+        Topic: example  Partition: 2    Leader: 2       Replicas: 2,0,1 Isr: 0,2,1      Offline: 
+        Topic: example  Partition: 3    Leader: 0       Replicas: 0,2,1 Isr: 0,2,1      Offline: 
+        Topic: example  Partition: 4    Leader: 1       Replicas: 1,0,2 Isr: 0,2,1      Offline: 
+        Topic: example  Partition: 5    Leader: 2       Replicas: 2,1,0 Isr: 0,2,1      Offline:
 ```
-In that case we have to rebalance the brokers again:
-```bash
-kubectl -n operator exec -it kafka-0 bash
-# create a config file
-cat << EOF > config.properties
-confluent.license=
-confluent.rebalancer.metrics.sasl.mechanism=PLAIN
-confluent.rebalancer.metrics.sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule required username="test" password="test123";
-confluent.rebalancer.metrics.bootstrap.servers=kafka:9071
-confluent.rebalancer.metrics.security.protocol=SASL_PLAINTEXT
-EOF
-# start the rebalancer to check on the prompt if ervything is in balance
-confluent-rebalancer execute --zookeeper zookeeper:2181/kafka-operator --metrics-bootstrap-server kafka:9071 --throttle 10000000 --verbose --config-file config.properties 
-# Output 
-The cluster is already balanced, exiting.
-# check the status 
-confluent-rebalancer status --zookeeper zookeeper:2181/kafka-operator
-# describe topic
-kafka-topics --bootstrap-server kafka:9071 \
---command-config kafka.properties \
---describe --topic example
-# Output Broker are balanced
-Topic:example   PartitionCount:6        ReplicationFactor:3     Configs:min.insync.replicas=2,message.format.version=2.3-IV1,max.message.bytes=2097164
-        Topic: example  Partition: 0    Leader: 1       Replicas: 1,0,2 Isr: 0,2,1
-        Topic: example  Partition: 1    Leader: 2       Replicas: 2,1,0 Isr: 2,0,1
-        Topic: example  Partition: 2    Leader: 0       Replicas: 0,2,1 Isr: 0,2,1
-        Topic: example  Partition: 3    Leader: 1       Replicas: 1,2,0 Isr: 2,0,1
-        Topic: example  Partition: 4    Leader: 2       Replicas: 2,0,1 Isr: 2,0,1
-        Topic: example  Partition: 5    Leader: 0       Replicas: 0,1,2 Isr: 0,2,1
-```
+Cluster will balanced automatically
+
 
 ## Simulating node failure in k8s
 
@@ -97,14 +78,14 @@ kubectl get nodes
 NODE=`kubectl get pods kafka-0 -n operator -o json | jq -r .spec.nodeName`
 echo $NODE
 # Output something like this
-gke-cp53-cluster-cp53-node-pool-74668734-zf85
+gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-rfd5
 ```
 Now, simulate a node failure:
 ```Bash
 kubectl cordon ${NODE}
 kubectl get nodes
 #output
-gke-cp53-cluster-cp53-node-pool-74668734-zf85   Ready,SchedulingDisabled   <none>   74m   v1.13.11-gke.14
+gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-rfd5   Ready,SchedulingDisabled   <none>   90m   v1.16.13-gke.40
 ```
 Continue to delete the pod kafka-0 running on the node that is cordoned off.
 ```Bash
@@ -113,27 +94,31 @@ kubectl delete pod kafka-0 -n operator
 # in different terminal
 kubectl get pods -o wide -n operator -w | grep kafka
 # Kafa-0 becomes up and running on a new node gke-cp53-cluster-cp53-node-pool-74668734-mv24
-kafka-0                       1/1     Running   0          2m3s   10.12.8.2    gke-cp53-cluster-cp53-node-pool-74668734-mv24   <none>           <none>
-kafka-1                       1/1     Running   0          19m    10.12.9.3    gke-cp53-cluster-cp53-node-pool-5f4ba227-p9xq   <none>           <none>
-kafka-2                       1/1     Running   0          74m    10.12.15.3   gke-cp53-cluster-cp53-node-pool-e776ad48-71z5   <none>           <none>
+kafka-0                        0/1     Terminating   0          36m   10.8.11.5   gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-rfd5   <none>           <none>
+kafka-1                        1/1     Running       0          17m   10.8.8.6    gke-cp60-cluster-cp-node-pool-cp60-cl-bd07b188-vrhc   <none>           <none>
+kafka-2                        1/1     Running       0          29m   10.8.7.6    gke-cp60-cluster-cp-node-pool-cp60-cl-7074d2bf-2rtk   <none>           <none>
+kafka-0                        0/1     Terminating   0          36m   10.8.11.5   gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-rfd5   <none>           <none>
+kafka-0                        0/1     Terminating   0          36m   10.8.11.5   gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-rfd5   <none>           <none>
+kafka-0                        0/1     Pending       0          0s    <none>      <none>                                                <none>           <none>
+kafka-0                        0/1     Pending       0          0s    <none>      gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-3pl0   <none>           <none>
+kafka-0                        0/1     Init:0/1      0          1s    <none>      gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-3pl0   <none>           <none>
+kafka-0                        0/1     PodInitializing   0          19s   10.8.10.7   gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-3pl0   <none>           <none>
+kafka-0                        0/1     Running           0          20s   10.8.10.7   gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-3pl0   <none>           <none>
 # Check Nodes, the defected node is still defected
 kubectl get nodes
 # output
 NAME                                            STATUS                     ROLES    AGE   VERSION
-gke-cp53-cluster-cp53-node-pool-5f4ba227-7vb3   Ready                      <none>   79m   v1.13.11-gke.14
-gke-cp53-cluster-cp53-node-pool-5f4ba227-bnkk   Ready                      <none>   79m   v1.13.11-gke.14
-gke-cp53-cluster-cp53-node-pool-5f4ba227-p9xq   Ready                      <none>   79m   v1.13.11-gke.14
-gke-cp53-cluster-cp53-node-pool-5f4ba227-wnf0   Ready                      <none>   79m   v1.13.11-gke.14
-gke-cp53-cluster-cp53-node-pool-74668734-2qw1   Ready                      <none>   79m   v1.13.11-gke.14
-gke-cp53-cluster-cp53-node-pool-74668734-c644   Ready                      <none>   79m   v1.13.11-gke.14
-gke-cp53-cluster-cp53-node-pool-74668734-mv24   Ready                      <none>   79m   v1.13.11-gke.14
-">>"gke-cp53-cluster-cp53-node-pool-74668734-zf85   Ready,SchedulingDisabled   <none>   79m   v1.13.11-gke.14
-gke-cp53-cluster-cp53-node-pool-e776ad48-71z5   Ready                      <none>   79m   v1.13.11-gke.14
-gke-cp53-cluster-cp53-node-pool-e776ad48-cvpj   Ready                      <none>   79m   v1.13.11-gke.14
-gke-cp53-cluster-cp53-node-pool-e776ad48-ln23   Ready                      <none>   79m   v1.13.11-gke.14
-gke-cp53-cluster-cp53-node-pool-e776ad48-w2d4   Ready                      <none>   79m   v1.13.11-gke.14
+gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-3pl0   Ready                      <none>   92m   v1.16.13-gke.401
+">>"gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-rfd5   Ready,SchedulingDisabled   <none>   92m   v1.16.13-gke.401
+gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-tzqj   Ready                      <none>   92m   v1.16.13-gke.401
+gke-cp60-cluster-cp-node-pool-cp60-cl-7074d2bf-2rtk   Ready                      <none>   92m   v1.16.13-gke.401
+gke-cp60-cluster-cp-node-pool-cp60-cl-7074d2bf-89nb   Ready                      <none>   92m   v1.16.13-gke.401
+gke-cp60-cluster-cp-node-pool-cp60-cl-7074d2bf-nwr3   Ready                      <none>   92m   v1.16.13-gke.401
+gke-cp60-cluster-cp-node-pool-cp60-cl-bd07b188-2rg9   Ready                      <none>   92m   v1.16.13-gke.401
+gke-cp60-cluster-cp-node-pool-cp60-cl-bd07b188-pqmq   Ready                      <none>   92m   v1.16.13-gke.401
+gke-cp60-cluster-cp-node-pool-cp60-cl-bd07b188-vrhc   Ready                      <none>   92m   v1.16.13-gke.401
 # That mean kafka-0 broker is running on a new node
-kubectl get pods -o wide -n operator | grep gke-cp53-cluster-cp53-node-pool-74668734-mv24
+kubectl get pods -o wide -n operator | grep gke-cp60-cluster-cp-node-pool-cp60-cl-6532322a-rfd5
 ```
 Ok, Node and Broker is up and running, let's test the topic:
 ```bash
@@ -158,20 +143,13 @@ kafka-topics --bootstrap-server kafka:9071 \
 --command-config kafka.properties \
 --describe --topic example
 # Output Broker are balanced
-Topic:example   PartitionCount:6        ReplicationFactor:3     Configs:min.insync.replicas=2,message.format.version=2.3-IV1,max.message.bytes=2097164
-        Topic: example  Partition: 0    Leader: 1       Replicas: 1,0,2 Isr: 2,1,0
-        Topic: example  Partition: 1    Leader: 2       Replicas: 2,1,0 Isr: 2,1,0
-        Topic: example  Partition: 2    Leader: 0       Replicas: 0,2,1 Isr: 2,1,0
-        Topic: example  Partition: 3    Leader: 1       Replicas: 1,2,0 Isr: 2,1,0
-        Topic: example  Partition: 4    Leader: 2       Replicas: 2,0,1 Isr: 2,1,0
-        Topic: example  Partition: 5    Leader: 0       Replicas: 0,1,2 Isr: 2,1,0
-# Check with ADB on the prompt if cluster is in balance
-The cluster is already balanced, exiting
-onfluent-rebalancer execute \
-> --zookeeper zookeeper:2181/kafka-operator \
-> --metrics-bootstrap-server kafka:9071 \
-> --throttle 10000000 \
-> --verbose \
-> --config-file config.properties
+Topic: example  PartitionCount: 6       ReplicationFactor: 3    Configs: min.insync.replicas=2,message.format.version=2.3-IV1,max.message.bytes=2097164
+        Topic: example  Partition: 0    Leader: 0       Replicas: 0,1,2 Isr: 2,1,0      Offline: 
+        Topic: example  Partition: 1    Leader: 1       Replicas: 1,2,0 Isr: 2,1,0      Offline: 
+        Topic: example  Partition: 2    Leader: 2       Replicas: 2,0,1 Isr: 2,1,0      Offline: 
+        Topic: example  Partition: 3    Leader: 0       Replicas: 0,2,1 Isr: 2,1,0      Offline: 
+        Topic: example  Partition: 4    Leader: 1       Replicas: 1,0,2 Isr: 2,1,0      Offline: 
+        Topic: example  Partition: 5    Leader: 2       Replicas: 2,1,0 Isr: 2,1,0      Offline: 
+
 ```
 You can also try to delete the compute instance of such a cluster node with cloud provider cli tools (aws or gcloud). 

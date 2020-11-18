@@ -6,117 +6,126 @@ PROVIDER=${2}
 # set current directory of this script
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo "MYDIR is ${MYDIR}"
-if [[ ${PROVIDER} == "gcp" ]]; then
-  until gcloud container clusters list --region ${REGION} | grep 'RUNNING' >/dev/null 2>&1; do
-    echo "kubeapi not available yet..."
-    sleep 3
-  done
-else
-  until eksctl get cluster --region ${REGION} >/dev/null 2>&1; do
-    echo "kubeapi not available yet..."
-    sleep 3
-  done
-fi
+
+# Deploy Kubernets Metric Server 
+echo "Deploying K8s Matric Server..."
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.6/components.yaml
+kubectl get deployment metrics-server -n kube-system
 
 echo "Deploying K8s dashboard..."
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-rc2/aio/deploy/recommended.yaml
 
 echo "Download Confluent Operator"
 # check if Confluent Operator still exist
-cd ${MYDIR}/${PROVIDER}
 DIR="confluent-operator/"
-if [ -d "$DIR" ]; then
+if [[ -d "$DIR" ]]; then
   # Take action if $DIR exists. #
   echo "Operator is installed..."
   cd confluent-operator/
 else
   mkdir confluent-operator
   cd confluent-operator/
-  wget https://platform-ops-bin.s3-us-west-1.amazonaws.com/operator/confluent-operator-20190912-v0.65.1.tar.gz
-  tar -xvf confluent-operator-20190912-v0.65.1.tar.gz
-  rm confluent-operator-20190912-v0.65.1.tar.gz
-  cp ${MYDIR}/${PROVIDER}/${PROVIDER}.yaml helm/providers/
+  # CP 5.3
+  #wget https://platform-ops-bin.s3-us-west-1.amazonaws.com/operator/confluent-operator-20190912-v0.65.1.tar.gz
+  #tar -xvf confluent-operator-20190912-v0.65.1.tar.gz
+  #rm confluent-operator-20190912-v0.65.1.tar.gz
+  # CP 5.4
+  #wget https://platform-ops-bin.s3-us-west-1.amazonaws.com/operator/confluent-operator-20200115-v0.142.1.tar.gz
+  #tar -xvf confluent-operator-20200115-v0.142.1.tar.gz
+  #rm confluent-operator-20200115-v0.142.1.tar.gz
+  # CP 6.0
+  wget https://platform-ops-bin.s3-us-west-1.amazonaws.com/operator/confluent-operator-1.6.0-for-confluent-platform-6.0.0.tar.gz
+  tar -xvf confluent-operator-1.6.0-for-confluent-platform-6.0.0.tar.gz
+  rm confluent-operator-1.6.0-for-confluent-platform-6.0.0.tar.gz
+
+  #cp ${MYDIR}/gcp.yaml helm/providers/
 fi
 
 cd helm/
 
+echo "prepare Confluent Operator installation"
+kubectl create namespace operator || true
+
 echo "Install Confluent Operator"
-#helm delete --purge operator
-helm install \
--f ./providers/${PROVIDER}.yaml \
---name operator \
+# Operator
+helm upgrade --install \
+operator \
+./confluent-operator -f ${MYDIR}/${PROVIDER}/${PROVIDER}.yaml \
 --namespace operator \
---set operator.enabled=true \
-./confluent-operator || true
+--set operator.enabled=true
 echo "After Operator Installation: Check all pods..."
 kubectl get pods -n operator
 kubectl rollout status deployment -n operator cc-operator
-kubectl rollout status deployment -n operator cc-manager
-
-echo "Patch the Service Account so it can pull Confluent Platform images"
-kubectl -n operator patch serviceaccount default -p '{"imagePullSecrets": [{"name": "confluent-docker-registry" }]}'
+kubectl get crd | grep confluent
 
 echo "Install Confluent Zookeeper"
-#helm delete --purge zookeeper
-helm install \
--f ./providers/${PROVIDER}.yaml \
---name zookeeper \
+#zookeeper
+helm upgrade --install \
+zookeeper \
+./confluent-operator -f ${MYDIR}/${PROVIDER}/${PROVIDER}.yaml \
 --namespace operator \
---set zookeeper.enabled=true \
-./confluent-operator || true
+--set zookeeper.enabled=true
 echo "After Zookeeper Installation: Check all pods..."
 kubectl get pods -n operator
 sleep 10
 kubectl rollout status sts -n operator zookeeper
 
 echo "Install Confluent Kafka"
-#helm delete --purge kafka
-helm install \
--f ./providers/${PROVIDER}.yaml \
---name kafka \
+#kafka
+helm upgrade --install \
+kafka \
+./confluent-operator -f ${MYDIR}/${PROVIDER}/${PROVIDER}.yaml \
 --namespace operator \
---set kafka.enabled=true \
-./confluent-operator || true
+--set kafka.enabled=true 
 echo "After Kafka Broker Installation: Check all pods..."
 kubectl get pods -n operator
 sleep 10
 kubectl rollout status sts -n operator kafka
 
 echo "Install Confluent Schema Registry"
-#helm delete --purge schemaregistry
-helm install \
--f ./providers/${PROVIDER}.yaml \
---name schemaregistry \
+#schemaregistry
+helm upgrade --install \
+schemaregistry \
+./confluent-operator -f ${MYDIR}/${PROVIDER}/${PROVIDER}.yaml \
 --namespace operator \
---set schemaregistry.enabled=true \
-./confluent-operator || true
+--set schemaregistry.enabled=true
 echo "After Schema Registry Installation: Check all pods..."
 kubectl get pods -n operator
 sleep 10
 kubectl rollout status sts -n operator schemaregistry
 
 
-echo "Install Confluent KSQL"
-# helm delete --purge ksql
-helm install \
--f ./providers/${PROVIDER}.yaml \
---name ksql \
+echo "Install Confluent Connect"
+# Kafka Connect
+helm upgrade --install \
+connect \
+./confluent-operator -f ${MYDIR}/${PROVIDER}/${PROVIDER}.yaml \
 --namespace operator \
---set ksql.enabled=true \
-./confluent-operator || true
+--set connect.enabled=true
+echo "After Kafka Connect Installation: Check all pods..."
+kubectl get pods -n operator
+sleep 10
+kubectl rollout status sts -n operator connectors
+
+echo "Install Confluent KSQL"
+# ksql
+helm upgrade --install \
+ksql \
+./confluent-operator  -f ${MYDIR}/${PROVIDER}/${PROVIDER}.yaml \
+--namespace operator \
+--set ksql.enabled=true 
 echo "After KSQL Installation: Check all pods..."
 kubectl get pods -n operator
 sleep 10
 kubectl rollout status sts -n operator ksql
 
 echo "Install Confluent Control Center"
-# helm delete --purge controlcenter
-helm install \
--f ./providers/${PROVIDER}.yaml \
---name controlcenter \
+# controlcenter
+helm upgrade --install \
+controlcenter \
+./confluent-operator  -f ${MYDIR}/${PROVIDER}/${PROVIDER}.yaml \
 --namespace operator \
---set controlcenter.enabled=true \
-./confluent-operator || true
+--set controlcenter.enabled=true
 echo "After Control Center Installation: Check all pods..."
 kubectl get pods -n operator
 sleep 10
