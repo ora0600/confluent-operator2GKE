@@ -1,10 +1,8 @@
 
-CURRENTLY WORK IN PROGRESS for AZURE.
-
-# Deploying Confluent Cluster with Confluent Operator into managed K8s (AWS and GCP)
+# Deploying Confluent Cluster with Confluent Operator into managed K8s (AWS, AZURE and GCP)
 
 Let's first understand the used components in this demo. Then install the required CLI tools. Finally setup the demo with just two commands.
-Currently we will deploy Confluent Platform 6.0 clusters with Confluent Operator into GCP GKE, AWS EKS or Azure AKS (not yet implemented).
+Currently we will deploy Confluent Platform 6.0 clusters with Confluent Operator into GCP GKE, AWS EKS or Azure AKS.
 You will deploy the Infrastructure into cloud and based on this a couple of hands-on steps have to be executed.
 
 ## Installed Components
@@ -34,6 +32,7 @@ The following components are required:
 * [GCloud CLI v. 277.0.0](https://cloud.google.com/sdk/docs/quickstart-macos) (run `gcloud init first`)
 * [aws cli ](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) for AWS Cloud: Tool that provides the primary CLI to AWS Cloud Platform
 * [eksctl ](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html) for AWS Cloud: Tool that provides the primary CLI to AWS EKS Cloud Service.
+* [az cli ](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-macos) for Azure Cloud: Tool that provides the primary CLI to Azure Cloud Platform
 Make sure to have up-to-date versions (see the tested versions above). For instance, an older version of helm or kubectl CLI did not work well and threw (sometimes confusing) exceptions.
 The setup is tested on Mac OS X. We used Confluent Platform 6.0.0
 
@@ -48,6 +47,9 @@ Set up the cluster in GCP:
 Setup the cluster in AWS
 * [AWS deployment with terraform](terraform/aws)
 
+## Goto Azure Setup
+Setup the cluster in Azure
+* [Azure deployment with terraform](terraform/azure)
 
 ## Following use cases can be executed 
 
