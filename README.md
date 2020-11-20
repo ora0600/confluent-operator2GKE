@@ -60,6 +60,7 @@ Find a couple of use cases how to use Confluent Operator within a K8s deployment
  * Scale down and Scale up the Confluent Cluster [Readme](usecases/README_SCALE.md)
  * Doing a version Upgrade from 6.0.0 to 5.5.1 [Readme](usecases/README_UPGRADE.md)
  * We will simulate some crashed and see what is happining [Readme](usecases/README_SelfHealing.md)
+ * Build a connect cluster with Operator [Readme](usecases/README_connect.md)
  * Finally we show CP 6.0 features with Operator [Readme](usecases/README_60_features.md)
 
 
