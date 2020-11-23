@@ -22,6 +22,6 @@ if [ "$PROVIDER" == "aws" ]; then
 
 fi
 
-if [ "$PROVIDER" == "aws" ]; then
+if [ "$PROVIDER" == "azure" ]; then
 echo "delete azure cluster"
 fi
