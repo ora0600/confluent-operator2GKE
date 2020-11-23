@@ -11,7 +11,7 @@ The following components are required:
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/): e.g. brew install kubernetes-cli (tested with 1.16.0)
 * helm 3: e.g. brew reinstall helm (tested with 3.0.2) see [Migrate from Helm 2 to 3](https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/), [install helm 3.0.2](https://helm.sh/docs/intro/install/) and [Helm 2 to Helm 3 Upgrade](https://runkiss.blogspot.com/2019/12/helm-2-to-helm-3-updates.html). In most cases, you just need to install Helm 3 and then add the stable Helm Repo: `helm repo add stable https://kubernetes-charts.storage.googleapis.com/'
 * [terraform (0.12.19)](https://www.terraform.io/downloads.html): e.g. `brew install terraform`
-* [GCloud CLI v. 277.0.0](https://cloud.google.com/sdk/docs/quickstart-macos) (run `gcloud init first`)
+* [GCloud CLI v. 277.0.0](https://cloud.google.com/sdk/docs/quickstart-macos) (run `gcloud init` first)
 The setup is tested on Mac OS X.
 
 Make sure to have updated versions, e.g. an older version of helm did not work.
