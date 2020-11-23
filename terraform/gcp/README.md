@@ -56,9 +56,9 @@ Please enter your numeric choice:
    * Add the helm stable repository: `helm repo add stable https://kubernetes-charts.storage.googleapis.com`
    * Run `terraform plan` (plans the setup)
    * Run `terraform apply` (sets up all required infrastructure on GCP - can take 10-20 minutes) - NOTE: If you get any "weird error messages" while the build is running, just execute the command again. This sometimes happens if the connectivity to GCP is bad or if any other cloud issues happen.
-4.9 HINT: It cloud be happen that in script `00_setup_GKE.sh` an error is thrown e.g. "namespace not available". Please change in `k8s-admin-service-account.yaml` kubernetes-dashboard to kube-system.
+5. HINT: It cloud be happen that in script `00_setup_GKE.sh` an error is thrown e.g. "namespace not available". Please change in `k8s-admin-service-account.yaml` kubernetes-dashboard to kube-system.
 
-5. Follow the  Information to work with the Confluent Setup [go to confluent](../../confluentREADME.md)
+6. Follow the  Information to work with the Confluent Setup [go to confluent](../../confluentREADME.md)
 
 # Destroy Infrastructure
 
