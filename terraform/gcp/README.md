@@ -1,4 +1,4 @@
-# Create GCP K8s 
+# Create GCP K8s (GKE cluster) 
 
 Applying this terraform deployment will create a K8s cluster with the following deployed:
 
@@ -59,7 +59,7 @@ Please enter your numeric choice:
 
 5. Follow the  Information to work with the Confluent Setup [go to confluent](../../confluentREADME.md)
 
-The GKE cluster creation will take around minutes.
+The GKE cluster creation will take around 10-15 minutes. You will GKE cluster with a  multi-node Confluent Platform deployed into it.
 
 # Destroy Infrastructure
 
