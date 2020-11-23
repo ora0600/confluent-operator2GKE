@@ -65,7 +65,7 @@ kafka:
 ## Connect Cluster
 ##
 connect:
-  name: connectors
+  name: connect
   replicas: 1
   tls:
     enabled: false
