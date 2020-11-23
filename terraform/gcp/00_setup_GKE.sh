@@ -11,7 +11,7 @@ gcloud container clusters get-credentials ${CNAME} --region ${REGION}
 
 # Create admin-user service account
 kubectl apply -f k8s-admin-service-account.yaml
-echo "If you got an error here: please huse namespace kube-system"
+echo "If you got an wrong namespace error here: please use namespace kube-system"
 
 
 # Context should be set automatically
