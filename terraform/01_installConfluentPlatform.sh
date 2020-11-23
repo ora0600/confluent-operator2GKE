@@ -105,7 +105,7 @@ connect \
 echo "After Kafka Connect Installation: Check all pods..."
 kubectl get pods -n operator
 sleep 10
-kubectl rollout status sts -n operator connectors
+kubectl rollout status sts -n operator connect
 
 echo "Install Confluent KSQL"
 # ksql
