@@ -39,7 +39,7 @@ compute:
 core:
   account: your email
   disable_usage_reporting: 'True'
-  project: ypur project name
+  project: your project name
 
 Pick configuration to use:
  [1] Re-initialize this configuration [default] with new settings 
@@ -59,6 +59,8 @@ Please enter your numeric choice:
 
 5. Follow the  Information to work with the Confluent Setup [go to confluent](../../confluentREADME.md)
 
+The GKE cluster creation will take around minutes.
+
 # Destroy Infrastructure
 
 * Run 'terraform destroy' to stop and remove the created Kubernetes infrastructure
@@ -67,6 +69,8 @@ Please enter your numeric choice:
 terraform destroy
 rm -r confluent-operator/
 ```
+The destroy of GKE cluster will take around 30 minutes.
+
 HINT:
 * Double check in Google Cloud Console if everything is destroyed: 
   Kubernetes Engine, Compute Engine and under Compute Engine please check also Disks and Instance Groups.
