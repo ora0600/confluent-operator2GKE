@@ -58,11 +58,12 @@ rm -r confluent-operator/
 
 If this is happeing check if node cluster is deleting.
 The volumes will not deleted by terraform destroy. So, please delete all dynamic PVC volumes in AWS console.
+And also check if the kubernetes loadbalancer are deleted, if not delete from AWS console.
 Delete manually:
 ```bash
 aws eks list-nodegroups --cluster-name cp-60-cluster
 aws eks delete-nodegroup --nodegroup-name cp60 --cluster-name cp-60-cluster
- aws eks delete-cluster --name cp-60-cluster
+aws eks delete-cluster --name cp-60-cluster
 ```
 
 HINT:
