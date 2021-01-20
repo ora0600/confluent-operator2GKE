@@ -39,7 +39,7 @@ az aks show -n cp60-cluster -g azure-cp60
 
 
 The following setup was provisioned:
-![k8s cluster deployed pods](../images/k8s_cluster.png)
+![k8s cluster deployed pods](../images/k8s_dashboard.png)
 
 ## test confluent platform on k8s
 First which namespaces are setup:
