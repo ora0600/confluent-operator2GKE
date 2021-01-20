@@ -92,7 +92,7 @@ kubectl get services -n operator | grep LoadBalancer
 ```
 
 Then edit the `/etc/hosts` file and add the new IPs with hostnames:
-For aws you won#t get the Public IP Adresss please ping the external hosts e.g.
+For aws you won't get the Public IP Adresss please ping the external hosts e.g.
 ```bash
 ping a7dd71d73184111eaab430a8209a4a74-1231623882.eu-central-1.elb.amazonaws.com
 ...
