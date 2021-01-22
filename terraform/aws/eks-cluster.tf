@@ -37,7 +37,7 @@ resource "aws_iam_role_policy_attachment" "cp60-cluster-AmazonEKSServicePolicy" 
 resource "aws_security_group" "cp60-cluster" {
   name        = "terraform-eks-cp60-cluster"
   description = "Cluster communication with worker nodes"
-  vpc_id      = "${aws_vpc.cp60.id}"
+  vpc_id      = "${aws_vpc.terraform-eks-cp60-vpc.id}"
 
   egress {
     from_port   = 0
@@ -68,7 +68,7 @@ resource "aws_eks_cluster" "cp60" {
 
   vpc_config {
     security_group_ids = ["${aws_security_group.cp60-cluster.id}"]
-    subnet_ids         = "${aws_subnet.cp60[*].id}"
+    subnet_ids         = "${aws_subnet.terraform-eks-cp60-subnet[*].id}"
   }
 
   depends_on = [
