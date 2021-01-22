@@ -42,7 +42,7 @@ resource "aws_eks_node_group" "cp60" {
   cluster_name    = "${aws_eks_cluster.cp60.name}"
   node_group_name = "cp60"
   node_role_arn   = "${aws_iam_role.cp60-node.arn}"
-  subnet_ids      = "${aws_subnet.cp60[*].id}"
+  subnet_ids      = "${aws_subnet.terraform-eks-cp60-subnet[*].id}"
   ami_type        = "AL2_x86_64"
   disk_size       = 50
   instance_types  = ["t2.xlarge"]
